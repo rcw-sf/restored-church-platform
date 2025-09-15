@@ -1,0 +1,46 @@
+---
+version: 2
+
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 3
+
+    groups:
+      core:
+        patterns:
+          - "luxon"
+
+      react:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "react-*"
+
+      tools:
+        patterns:
+          - "*eslint*"
+          - "*prettier*"
+          - "globals"
+          - "@types/*"
+          - "jiti"
+
+      testing:
+        patterns:
+          - "vitest*"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
+    open-pull-requests-limit: 3
+
+    groups:
+      actions:
+        patterns:
+          - "actions/*"
+          - "pnpm/*"
+          - "raven-actions/actionlint*"
