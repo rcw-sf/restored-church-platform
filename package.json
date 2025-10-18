@@ -4,15 +4,20 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "main": "pnpm --filter main dev",
+    "deposit-counter": "pnpm --filter deposit-counter dev",
+    "admin": "pnpm --filter admin dev",
+    "build:admin": "pnpm --filter admin build",
+    "deploy:admin": "pnpm build:admin && firebase deploy --only hosting:admin",
+    "build:deposit-counter": "pnpm --filter deposit-counter build",
+    "deploy:deposit-counter": "pnpm build:deposit-counter && firebase deploy --only hosting:deposit-counter",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint .",
-    "deposit-counter": "pnpm --filter deposit-counter dev",
-    "build:deposit-counter": "pnpm --filter deposit-counter build",
-    "deploy:deposit-counter": "pnpm build:deposit-counter && pnpm exec firebase deploy --only hosting:deposit-counter",
-    "test": "pnpm --filter deposit-counter test",
-    "test:watch": "pnpm  --filter deposit-counter test:watch",
-    "test:coverage": "pnpm --filter deposit-counter test:coverage"
+    "test": "pnpm --filter deposit-counter test && pnpm --filter admin test",
+    "test:deposit-counter:watch": "pnpm  --filter deposit-counter test:watch",
+    "test:admin:watch": "pnpm --filter admin test:watch",
+    "test:coverage": "pnpm --filter deposit-counter test:coverage && pnpm --filter admin test:coverage"
   },
   "keywords": [],
   "author": "",
@@ -26,12 +31,15 @@
     }
   },
   "dependencies": {
+    "firebase": "12.12.0",
     "luxon": "3.7.2"
   },
   "devDependencies": {
     "@eslint/js": "9.33.0",
     "@trivago/prettier-plugin-sort-imports": "5.2.2",
     "@types/luxon": "3.7.1",
+    "@types/node": "25.6.0",
+    "@vitest/coverage-v8": "4.1.4",
     "eslint": "9.33.0",
     "eslint-plugin-react": "7.37.5",
     "eslint-plugin-react-hooks": "5.2.0",
@@ -40,6 +48,10 @@
     "globals": "17.4.0",
     "jiti": "2.6.1",
     "prettier": "3.6.2",
-    "typescript-eslint": "8.58.0"
+    "typescript": "5.8.3",
+    "typescript-eslint": "8.58.0",
+    "vite": "7.1.2",
+    "vitest": "4.1.4",
+    "vitest-github-actions-reporter": "0.11.1"
   }
 }
