@@ -28,9 +28,11 @@ export default function ChecksSection({
               placeholder="Check #"
               value={check.number}
               onChange={(e) => {
-                const updated = [...checks];
-                updated[idx].number = e.target.value;
-                setChecks(updated);
+                setChecks(
+                  checks.map((c, i) =>
+                    i === idx ? { ...c, number: e.target.value } : c,
+                  ),
+                );
               }}
               className="input input-bordered w-32 text-lg"
             />
@@ -42,9 +44,11 @@ export default function ChecksSection({
                 placeholder="Amount"
                 value={check.amount || ""}
                 onChange={(e) => {
-                  const updated = [...checks];
-                  updated[idx].amount = Number(e.target.value);
-                  setChecks(updated);
+                  setChecks(
+                    checks.map((c, i) =>
+                      i === idx ? { ...c, amount: Number(e.target.value) } : c,
+                    ),
+                  );
                 }}
                 className="input input-bordered text-lg"
               />
