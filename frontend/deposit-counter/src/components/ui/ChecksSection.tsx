@@ -1,10 +1,6 @@
 import NumericInput from "@/components/ui/NumericInput";
+import type { Check } from "@/types/Check";
 import { FaDollarSign } from "react-icons/fa6";
-
-export interface Check {
-  number: string;
-  amount: number;
-}
 
 interface ChecksSectionProps {
   checks: Check[];

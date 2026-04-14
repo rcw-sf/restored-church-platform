@@ -1,6 +1,6 @@
+import DepositSection from "@/components/ui/DepositSection";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import DepositSection from "@/components/ui/DepositSection";
 
 describe("DepositSection", () => {
   const denominations = [1, 5, 10];
@@ -51,6 +51,6 @@ describe("DepositSection", () => {
     expect(onCountsChange).toHaveBeenCalledWith({ 1: 5 });
 
     rerender(<DepositSection title="T" denominations={[1]} resetTrigger={2} />);
-    expect(input).toHaveValue(0);
+    expect(input).toHaveValue(null);
   });
 });

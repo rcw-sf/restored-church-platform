@@ -1,6 +1,6 @@
+import DescriptionDateInput from "@/components/ui/DescriptionDateInput";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import DescriptionDateInput from "@/components/ui/DescriptionDateInput";
 
 describe("DescriptionDateInput", () => {
   it("handles description changes and validation", () => {
@@ -23,7 +23,9 @@ describe("DescriptionDateInput", () => {
     expect(setDescriptionError).toHaveBeenCalledWith("");
 
     fireEvent.blur(input);
-    expect(setDescriptionError).toHaveBeenCalledWith("Description is required.");
+    expect(setDescriptionError).toHaveBeenCalledWith(
+      "Description is required.",
+    );
   });
 
   it("handles date changes", () => {

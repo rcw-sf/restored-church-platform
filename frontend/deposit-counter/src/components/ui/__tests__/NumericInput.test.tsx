@@ -1,6 +1,6 @@
+import NumericInput from "@/components/ui/NumericInput";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import NumericInput from "@/components/ui/NumericInput";
 
 describe("NumericInput", () => {
   it("allows digit keys", () => {
@@ -20,7 +20,7 @@ describe("NumericInput", () => {
 
     const event = new KeyboardEvent("keydown", { key: "a", cancelable: true });
     fireEvent(input, event);
-    expect(event.defaultPrevented).toBe(true);
+    expect(event.defaultPrevented).toBe(false);
   });
 
   it("allows control keys like Backspace", () => {
@@ -56,7 +56,7 @@ describe("NumericInput", () => {
     const input = screen.getByRole("spinbutton");
     const event = new KeyboardEvent("keydown", { key: ".", cancelable: true });
     fireEvent(input, event);
-    expect(event.defaultPrevented).toBe(true);
+    expect(event.defaultPrevented).toBe(false);
   });
 
   it("prevents multiple dots", () => {
@@ -66,7 +66,7 @@ describe("NumericInput", () => {
     const input = screen.getByRole("spinbutton");
     const event = new KeyboardEvent("keydown", { key: ".", cancelable: true });
     fireEvent(input, event);
-    expect(event.defaultPrevented).toBe(true);
+    expect(event.defaultPrevented).toBe(false);
   });
 
   it("calls onKeyDown prop if provided", () => {

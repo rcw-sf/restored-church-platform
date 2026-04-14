@@ -1,6 +1,6 @@
+import FormatNumber from "@/components/ui/FormatNumber";
 import { render } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import FormatNumber from "@/components/ui/FormatNumber";
 
 describe("FormatNumber", () => {
   it("renders formatted currency string", () => {
@@ -17,9 +17,7 @@ describe("FormatNumber", () => {
   });
 
   it("renders as decimal style", () => {
-    const { container } = render(
-      <FormatNumber value={1234} style="decimal" />,
-    );
+    const { container } = render(<FormatNumber value={1234} style="decimal" />);
     expect(container.textContent).toBe("1,234");
   });
 });

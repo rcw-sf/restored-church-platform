@@ -1,6 +1,6 @@
+import SummarySection from "@/components/ui/SummarySection";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import SummarySection from "@/components/ui/SummarySection";
 
 describe("SummarySection", () => {
   it("renders summary items with correct formatting", () => {

@@ -3,15 +3,12 @@ import DepositSection from "@/components/ui/DepositSection";
 import DescriptionDateInput from "@/components/ui/DescriptionDateInput";
 import SummarySection from "@/components/ui/SummarySection";
 import Toast from "@/components/ui/Toast";
+import type { Check } from "@/types/Check";
 import type { SummaryItem } from "@/types/SummaryItem";
+import type { ToastMessage } from "@/types/Toast";
 import { generateTextSummary } from "@/utils/summary";
 import { DateTime } from "luxon";
 import { useState, useRef, useEffect } from "react";
-
-interface Check {
-  number: string;
-  amount: number;
-}
 
 const billDenominations = [1, 2, 5, 10, 20, 50, 100];
 const coinDenominations = [0.01, 0.05, 0.1, 0.25, 0.5, 1];
@@ -29,10 +26,7 @@ function Home() {
   const [checks, setChecks] = useState<Check[]>([]);
   const [billCounts, setBillCounts] = useState<Record<number, number>>({});
   const [coinCounts, setCoinCounts] = useState<Record<number, number>>({});
-  const [toastMessage, setToastMessage] = useState<{
-    message?: string;
-    isError?: boolean;
-  }>({});
+  const [toastMessage, setToastMessage] = useState<ToastMessage>({});
   const [resetTrigger, setResetTrigger] = useState(0);
 
   useEffect(() => {
@@ -84,10 +78,12 @@ function Home() {
   function resetForm() {
     setDescription("");
     setDescriptionError("");
-    setDate(new Date().toISOString().slice(0, 10));
+    setDate(DateTime.now().toFormat("yyyy-MM-dd"));
     setBillTotal(0);
     setCoinTotal(0);
     setChecks([]);
+    setBillCounts({});
+    setCoinCounts({});
     setResetTrigger((prev) => prev + 1);
     setToastMessage({ message: "", isError: false });
     descriptionRef.current?.focus();

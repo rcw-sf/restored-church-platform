@@ -1,6 +1,6 @@
+import ChecksSection from "@/components/ui/ChecksSection";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import ChecksSection from "@/components/ui/ChecksSection";
 
 describe("ChecksSection", () => {
   const mockChecks = [{ number: "101", amount: 50.0 }];
@@ -42,8 +42,6 @@ describe("ChecksSection", () => {
     const amountInput = screen.getByPlaceholderText("Amount");
     fireEvent.change(amountInput, { target: { value: "75.50" } });
 
-    expect(setChecks).toHaveBeenCalledWith([
-      { number: "101", amount: 75.5 },
-    ]);
+    expect(setChecks).toHaveBeenCalledWith([{ number: "101", amount: 75.5 }]);
   });
 });

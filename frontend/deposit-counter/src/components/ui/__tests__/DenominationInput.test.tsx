@@ -1,13 +1,11 @@
+import DenominationInput from "@/components/ui/DenominationInput";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import DenominationInput from "@/components/ui/DenominationInput";
 
 describe("DenominationInput", () => {
   it("manages internal state when value prop is missing", () => {
     const onValueChange = vi.fn();
-    render(
-      <DenominationInput multiplier={10} onValueChange={onValueChange} />,
-    );
+    render(<DenominationInput multiplier={10} onValueChange={onValueChange} />);
 
     const input = screen.getByPlaceholderText("0");
     fireEvent.change(input, { target: { value: "5" } });
