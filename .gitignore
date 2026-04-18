@@ -12,7 +12,12 @@ lerna-debug.log*
 **/reports/
 **/node_modules/
 **/dist-ssr/
+
+# Environment variables
 *.local
+.env
+.env.*
+!.env.example
 
 # Editor directories and files
 .vscode/*

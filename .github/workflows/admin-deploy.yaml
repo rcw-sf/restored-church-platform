@@ -1,21 +1,21 @@
-name: Deposit Counter Build and Deploy
+name: Admin Build and Deploy
 
 on:
   push:
     branches:
       - main
     paths:
-      - "frontend/deposit-counter/**"
+      - "frontend/admin/**"
       - "firebase.json"
       - ".firebaserc"
       - "package.json"
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
-      - ".github/workflows/deposit-counter-deploy.yaml"
+      - ".github/workflows/admin-deploy.yaml"
 
 jobs:
-  build-and-deploy-deposit-counter:
-    name: Build and Deploy Deposit Counter
+  build-and-deploy-admin:
+    name: Build and Deploy Admin
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -39,5 +39,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build and Deploy Deposit Counter
-        run: pnpm deploy:deposit-counter
+      - name: Inject Firebase Configuration
+        run: printf "%s" "$FIREBASE_CONFIG" > frontend/admin/.env
+        env:
+          FIREBASE_CONFIG: ${{ secrets.FIREBASE_RESTORED_CHURCH_PLATFORM_APP_CONFIG }}
+
+      - name: Build and Deploy Admin Portal
+        run: pnpm deploy:admin

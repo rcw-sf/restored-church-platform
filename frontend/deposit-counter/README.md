@@ -1,69 +1,39 @@
-# React + TypeScript + Vite
+# Restored Church - Deposit Counter
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The Deposit Counter is a specialized utility designed to assist church volunteers and staff in accurately counting and documenting physical deposits, including cash (bills and coins) and checks.
 
-Currently, two official plugins are available:
+## Core Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Currency Breakdown**: Interactive counting for all bill and coin denominations with real-time total calculation.
+- **Check Management**: Dedicated tracking for physical checks to ensure accurate reconciliation.
+- **Instant Summaries**: Generates a formatted summary of the entire deposit, ready to be copied to the clipboard.
+- **Validation & Error Handling**: Input validation for numeric fields and required metadata like descriptions and dates.
 
-## Expanding the ESLint configuration
+## Technology Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **Framework**: [React](https://react.dev/) + [Vite](https://vitejs.dev/)
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/) + [daisyUI](https://daisyui.com/)
+- **Date Utilities**: [Luxon](https://moment.github.io/luxon/)
+- **Testing**: Vitest + React Testing Library
 
-```js
-export default tseslint.config([
-  globalIgnores(["dist"]),
-  {
-    files: ["**/*.{ts,tsx}"],
-    extends: [
-      // Other configs...
+## Getting Started
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+1.  **Install Dependencies**:
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ["./tsconfig.node.json", "./tsconfig.app.json"],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-]);
-```
+    ```bash
+    pnpm install
+    ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+2.  **Development Server**:
 
-```js
-// eslint.config.js
-import reactDom from "eslint-plugin-react-dom";
-import reactX from "eslint-plugin-react-x";
+    ```bash
+    pnpm dev
+    ```
 
-export default tseslint.config([
-  globalIgnores(["dist"]),
-  {
-    files: ["**/*.{ts,tsx}"],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs["recommended-typescript"],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ["./tsconfig.node.json", "./tsconfig.app.json"],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-]);
-```
+3.  **Run Tests**:
+    ```bash
+    pnpm test
+    ```
+
+The application will be available at `http://localhost:5173`.

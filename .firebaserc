@@ -7,6 +7,9 @@
       "hosting": {
         "deposit-counter": [
           "deposit-counter"
+        ],
+        "admin": [
+          "restored-church-sf"
         ]
       }
     }
