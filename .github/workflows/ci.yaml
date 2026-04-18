@@ -54,3 +54,29 @@ jobs:
 
       - name: Check formatting
         run: pnpm format:check
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - uses: pnpm/action-setup@v5
+        name: Install pnpm
+        with:
+          cache: true
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run tests
+        run: pnpm test:coverage
+
+      - name: Report Coverage (Deposit Counter)
+        if: always()
+        uses: davelosert/vitest-coverage-report-action@v2
+        with:
+          name: Coverage Report (Deposit Counter)
+          working-directory: ./frontend/deposit-counter
+          file-coverage-mode: all

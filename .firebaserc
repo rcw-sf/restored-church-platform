@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "restored-church-sf"
+  },
+  "targets": {
+    "restored-church-sf": {
+      "hosting": {
+        "deposit-counter": [
+          "deposit-counter"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

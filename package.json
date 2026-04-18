@@ -7,21 +7,36 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint .",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "deposit-counter": "pnpm --filter deposit-counter dev",
+    "build:deposit-counter": "pnpm --filter deposit-counter build",
+    "deploy:deposit-counter": "pnpm build:deposit-counter && pnpm exec firebase deploy --only hosting:deposit-counter",
+    "test": "pnpm --filter deposit-counter test",
+    "test:watch": "pnpm  --filter deposit-counter test:watch",
+    "test:coverage": "pnpm --filter deposit-counter test:coverage"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.15.1",
+  "pnpm": {
+    "overrides": {
+      "vite": "7.3.2",
+      "@types/node": "25.6.0",
+      "yaml": "2.8.3"
+    }
+  },
   "dependencies": {
     "luxon": "3.7.2"
   },
   "devDependencies": {
-    "@eslint/js": "10.0.1",
+    "@eslint/js": "9.33.0",
     "@trivago/prettier-plugin-sort-imports": "5.2.2",
     "@types/luxon": "3.7.1",
-    "eslint": "10.2.0",
+    "eslint": "9.33.0",
     "eslint-plugin-react": "7.37.5",
+    "eslint-plugin-react-hooks": "5.2.0",
+    "eslint-plugin-react-refresh": "0.4.20",
+    "firebase-tools": "15.14.0",
     "globals": "17.4.0",
     "jiti": "2.6.1",
     "prettier": "3.6.2",
