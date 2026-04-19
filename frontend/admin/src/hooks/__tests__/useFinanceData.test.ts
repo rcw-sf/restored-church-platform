@@ -4,12 +4,6 @@ import { getDoc, type DocumentSnapshot } from "firebase/firestore";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { useFinanceData } from "../useFinanceData";
 
-// Mock firebase/firestore functions
-vi.mock("firebase/firestore", () => ({
-  doc: vi.fn(),
-  getDoc: vi.fn(),
-}));
-
 // Mock the firestore db instance
 vi.mock("@/lib/firestore", () => ({
   default: {},

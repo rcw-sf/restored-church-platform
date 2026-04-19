@@ -1,6 +1,8 @@
-import App from "@/App.tsx";
-import Finance from "@/pages/Finance.tsx";
-// import Home from "@/pages/Home.tsx";
+import App from "@/App";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
+import Finance from "@/pages/Finance";
+import Home from "@/pages/Home";
+import { AuthProvider } from "@/providers/AuthProvider";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter } from "react-router";
@@ -11,6 +13,18 @@ const router = createBrowserRouter([
     path: "/",
     Component: App,
     children: [
+      // Protected Routes
+      {
+        element: <ProtectedRoute />,
+        children: [
+          {
+            index: true,
+            path: "/home", // CHANGE LATER
+            Component: Home,
+          },
+        ],
+      },
+      // Public Routes
       {
         index: true,
         path: "/finance",
@@ -22,8 +36,10 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <div className="min-h-screen w-full">
-      <RouterProvider router={router} />
-    </div>
+    <AuthProvider>
+      <div className="min-h-screen w-full">
+        <RouterProvider router={router} />
+      </div>
+    </AuthProvider>
   </StrictMode>,
 );
