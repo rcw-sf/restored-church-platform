@@ -1,4 +1,4 @@
-import db from "@/lib/firestore";
+import { db } from "@/lib";
 import type {
   CentralAdminData,
   ExpenseItem,

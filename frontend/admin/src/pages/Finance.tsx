@@ -102,112 +102,116 @@ export default function Finance() {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Page Title */}
-      <div className="space-y-1">
-        <h1 className="text-2xl font-bold">Church Financial Dashboard</h1>
-        <p className="text-sm opacity-70">
-          Overview of income, expenses, and central administration
-        </p>
-      </div>
+    <div className="w-full flex justify-center">
+      <div className="w-full max-w-7xl px-4">
+        <div className="p-6 space-y-6">
+          {/* Page Title */}
+          <div className="space-y-1">
+            <h1 className="text-2xl font-bold">Church Financial Dashboard</h1>
+            <p className="text-sm opacity-70">
+              Overview of income, expenses, and central administration
+            </p>
+          </div>
 
-      {/* KPI Header */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <StatCard title="Total Income" value={totalIncome} />
-        <StatCard title="Total Expenses" value={totalExpense} />
-        <StatCard
-          title="Net Income"
-          value={netIncome}
-          variant={netIncome >= 0 ? "success" : "error"}
-        />
-      </div>
+          {/* KPI Header */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <StatCard title="Total Income" value={totalIncome} />
+            <StatCard title="Total Expenses" value={totalExpense} />
+            <StatCard
+              title="Net Income"
+              value={netIncome}
+              variant={netIncome >= 0 ? "success" : "error"}
+            />
+          </div>
 
-      {/* Income Section */}
-      <div className="card bg-base-100 shadow-xl p-6 space-y-6">
-        <h2 className="card-title text-lg">Income</h2>
+          {/* Income Section */}
+          <div className="card bg-base-100 shadow-xl p-6 space-y-6">
+            <h2 className="card-title text-lg">Income</h2>
 
-        <FinancePieChart data={pieData} />
+            <FinancePieChart data={pieData} />
 
-        {/* Income Breakdown List */}
-        <div className="space-y-3">
-          {incomeBreakdown.map((item) => {
-            const percentage =
-              totalIncome > 0 ? (item.amount / totalIncome) * 100 : 0;
-            return (
-              <BreakdownItem
-                key={item.category}
-                category={item.category}
-                amount={item.amount}
-                percentage={percentage}
-              />
-            );
-          })}
-
-          {/* Income Total (list only) */}
-          <div className="flex justify-between pt-3 font-semibold">
-            <span>Total Income</span>
-            <span className="tabular-nums">
-              $
-              {totalIncome.toLocaleString("en-US", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
+            {/* Income Breakdown List */}
+            <div className="space-y-3">
+              {incomeBreakdown.map((item) => {
+                const percentage =
+                  totalIncome > 0 ? (item.amount / totalIncome) * 100 : 0;
+                return (
+                  <BreakdownItem
+                    key={item.category}
+                    category={item.category}
+                    amount={item.amount}
+                    percentage={percentage}
+                  />
+                );
               })}
-            </span>
+
+              {/* Income Total (list only) */}
+              <div className="flex justify-between pt-3 font-semibold">
+                <span>Total Income</span>
+                <span className="tabular-nums">
+                  $
+                  {totalIncome.toLocaleString("en-US", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Expenses Section */}
+          <div className="card bg-base-100 shadow-xl p-6 space-y-6">
+            <h2 className="card-title text-lg">Expenses</h2>
+
+            <FinancePieChart data={expensePieData} />
+
+            {/* Expense List */}
+            <div className="space-y-3">
+              {expenses.map((item) => {
+                const percentage =
+                  totalExpense > 0 ? (item.amount / totalExpense) * 100 : 0;
+                return (
+                  <BreakdownItem
+                    key={item.category}
+                    category={item.category}
+                    amount={item.amount}
+                    percentage={percentage}
+                  />
+                );
+              })}
+
+              {/* Total Expense (list only) */}
+              <div className="flex justify-between pt-3 font-semibold">
+                <span>Total Expenses</span>
+                <span className="tabular-nums">
+                  $
+                  {totalExpense.toLocaleString("en-US", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Central Administration Section */}
+          <div className="card bg-base-100 shadow-xl p-6 space-y-6">
+            <h2 className="card-title text-lg">Central Administration</h2>
+
+            <div className="text-sm opacity-70">
+              Global monthly administration budget:{" "}
+              <span className="font-semibold">
+                $
+                {centralAdminBudget.toLocaleString("en-US", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+              </span>
+            </div>
+
+            <FinancePieChart data={centralAdminPieData} />
           </div>
         </div>
-      </div>
-
-      {/* Expenses Section */}
-      <div className="card bg-base-100 shadow-xl p-6 space-y-6">
-        <h2 className="card-title text-lg">Expenses</h2>
-
-        <FinancePieChart data={expensePieData} />
-
-        {/* Expense List */}
-        <div className="space-y-3">
-          {expenses.map((item) => {
-            const percentage =
-              totalExpense > 0 ? (item.amount / totalExpense) * 100 : 0;
-            return (
-              <BreakdownItem
-                key={item.category}
-                category={item.category}
-                amount={item.amount}
-                percentage={percentage}
-              />
-            );
-          })}
-
-          {/* Total Expense (list only) */}
-          <div className="flex justify-between pt-3 font-semibold">
-            <span>Total Expenses</span>
-            <span className="tabular-nums">
-              $
-              {totalExpense.toLocaleString("en-US", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Central Administration Section */}
-      <div className="card bg-base-100 shadow-xl p-6 space-y-6">
-        <h2 className="card-title text-lg">Central Administration</h2>
-
-        <div className="text-sm opacity-70">
-          Global monthly administration budget:{" "}
-          <span className="font-semibold">
-            $
-            {centralAdminBudget.toLocaleString("en-US", {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}
-          </span>
-        </div>
-
-        <FinancePieChart data={centralAdminPieData} />
       </div>
     </div>
   );

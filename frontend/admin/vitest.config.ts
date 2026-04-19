@@ -31,6 +31,7 @@ export default mergeConfig(
           "App.tsx",
           "types/",
           "src/lib",
+          "src/context",
         ],
         thresholds: {
           lines: 85,
