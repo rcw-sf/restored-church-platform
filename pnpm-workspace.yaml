@@ -2,3 +2,4 @@
 packages:
   - frontend/admin
   - frontend/deposit-counter
+  - backend/pushpay-sync

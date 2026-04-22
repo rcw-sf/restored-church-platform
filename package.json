@@ -7,6 +7,7 @@
     "main": "pnpm --filter main dev",
     "deposit-counter": "pnpm --filter deposit-counter dev",
     "admin": "pnpm --filter admin dev",
+    "pushpay-sync": "pnpm --filter pushpay-sync start",
     "build:admin": "pnpm --filter admin build",
     "deploy:admin": "pnpm build:admin && firebase deploy --only hosting:admin",
     "build:deposit-counter": "pnpm --filter deposit-counter build",
@@ -14,10 +15,11 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint .",
-    "test": "pnpm --filter deposit-counter test && pnpm --filter admin test",
+    "test": "pnpm --recursive --no-bail test",
     "test:deposit-counter:watch": "pnpm  --filter deposit-counter test:watch",
     "test:admin:watch": "pnpm --filter admin test:watch",
-    "test:coverage": "pnpm --filter deposit-counter test:coverage && pnpm --filter admin test:coverage"
+    "test:pushpay-sync:watch": "pnpm --recursive test:watch",
+    "test:coverage": "pnpm --recursive --no-bail test:coverage"
   },
   "keywords": [],
   "author": "",
