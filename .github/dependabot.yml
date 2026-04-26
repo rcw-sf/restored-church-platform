@@ -9,27 +9,10 @@ updates:
     open-pull-requests-limit: 3
 
     groups:
-      core:
-        patterns:
-          - "luxon"
-
-      react:
-        patterns:
-          - "react"
-          - "react-dom"
-          - "react-*"
-
-      tools:
-        patterns:
-          - "*eslint*"
-          - "*prettier*"
-          - "globals"
-          - "@types/*"
-          - "jiti"
-
-      testing:
-        patterns:
-          - "vitest*"
+      production-dependencies:
+        dependency-type: "production"
+      development-dependencies:
+        dependency-type: "development"
 
   - package-ecosystem: "github-actions"
     directory: "/"
@@ -39,8 +22,6 @@ updates:
     open-pull-requests-limit: 3
 
     groups:
-      actions:
+      all-actions:
         patterns:
-          - "actions/*"
-          - "pnpm/*"
-          - "raven-actions/actionlint*"
+          - "*"

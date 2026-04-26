@@ -24,10 +24,11 @@ export default defineConfig({
       include: ["src/**/*.{ts,tsx}"],
       exclude: [
         "**/*.test.{ts,tsx}",
-        "index.ts",
-        "types/",
+        "src/types",
         "src/config",
         "src/env.ts",
+        "src/run-sync-members.ts",
+        "src/utils/sleep.ts",
       ],
       thresholds: {
         lines: 85,

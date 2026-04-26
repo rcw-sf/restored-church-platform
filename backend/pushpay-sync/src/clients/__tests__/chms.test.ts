@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { getEnvironment } from "../../env.js";
-import { fetchPushpayChms } from "../pushpay.js";
+import { fetchPushpayChms } from "../chms.js";
 
 vi.mock("../../env.js", () => ({
   getEnvironment: vi.fn(),
@@ -11,16 +11,15 @@ describe("fetchPushpayChms", () => {
     pushpayChmsApiUsername: "testuser",
     pushpayChmsApiPassword: "testpassword",
     pushpayChmsApiBaseUrl: "https://api.example.com/",
+    pushpayGivingApiBaseUrl: "https://giving.example.com/",
+    pushpayAuthTokenApiBaseUrl: "https://auth.example.com/",
+    pushpayAuthTokenUsername: "authuser",
+    pushpayAuthTokenPassword: "authpassword",
+    pushpayOrganizationId: "org123",
+    contributionFundKey: "contribution",
+    benevolenceFundKey: "benevolence",
+    specialMissionsFundKey: "missions",
     firebaseProjectId: "test-project",
-
-    pushpayGivingApiBaseUrl: "https://api.example.com/",
-    pushpayAuthTokenApiBaseUrl: "https://api.example.com/",
-    pushpayAuthTokenUsername: "testuser",
-    pushpayAuthTokenPassword: "testpassword",
-    pushpayOrganizationId: "test-org",
-    contributionFundKey: "test-contribution",
-    benevolenceFundKey: "test-benevolence",
-    specialMissionsFundKey: "test-special-missions",
     tenantId: "test-tenant",
   };
 
