@@ -6,7 +6,7 @@ export interface MemberDoc {
   region?: string;
   superRegion?: string;
   ministry?: string;
-  pledge: number;
+  pledge?: number;
   phone?: string;
   email?: string;
   birthdate?: string;
@@ -20,5 +20,17 @@ export interface MemberDoc {
   familyPosition?: string;
   isMember: boolean;
   takeawayType?: string;
-  updatedAt: FirebaseFirestore.FieldValue;
+  familyMembers?: FamilyMemberDoc[];
+  pushpayCommunityMemberKey?: string;
+  pushpaySpouseCommunityMemberKey?: string; // Used for spouse giving logic
+  updatedAt?: FirebaseFirestore.FieldValue;
+  createdAt?: string;
+  modifiedAt?: string;
+  tenantId?: string;
+}
+
+export interface FamilyMemberDoc {
+  individualId?: string;
+  fullName?: string;
+  familyPosition?: string;
 }
