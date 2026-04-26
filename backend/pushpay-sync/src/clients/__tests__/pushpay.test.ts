@@ -12,6 +12,16 @@ describe("fetchPushpayChms", () => {
     pushpayChmsApiPassword: "testpassword",
     pushpayChmsApiBaseUrl: "https://api.example.com/",
     firebaseProjectId: "test-project",
+
+    pushpayGivingApiBaseUrl: "https://api.example.com/",
+    pushpayAuthTokenApiBaseUrl: "https://api.example.com/",
+    pushpayAuthTokenUsername: "testuser",
+    pushpayAuthTokenPassword: "testpassword",
+    pushpayOrganizationId: "test-org",
+    contributionFundKey: "test-contribution",
+    benevolenceFundKey: "test-benevolence",
+    specialMissionsFundKey: "test-special-missions",
+    tenantId: "test-tenant",
   };
 
   beforeEach(() => {

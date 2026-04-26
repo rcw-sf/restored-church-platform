@@ -4,7 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "start": "tsx src/index.ts",
+    "sync-members": "tsx src/run-sync-members.ts",
+    "sync-giving": "tsx src/run-sync-giving.ts",
+    "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest --watch",
     "test:coverage": "vitest run --coverage"

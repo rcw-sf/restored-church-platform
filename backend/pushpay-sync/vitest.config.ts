@@ -7,6 +7,7 @@ const dirname = path.dirname(fileURLToPath(import.meta.url));
 export default defineConfig({
   test: {
     root: dirname,
+    silent: true,
     environment: "node",
     include: ["src/**/*.test.{ts,tsx}"],
     reporters: ["default", "github-actions", "junit"],
