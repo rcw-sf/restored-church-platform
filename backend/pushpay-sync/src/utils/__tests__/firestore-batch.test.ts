@@ -49,9 +49,9 @@ describe("commitInChunks", () => {
 
     expect(mockFirestore.batch).toHaveBeenCalledTimes(1);
     expect(mockFn).toHaveBeenCalledTimes(items.length);
-    expect(mockFn).toHaveBeenCalledWith(mockBatch, items[0]);
-    expect(mockFn).toHaveBeenCalledWith(mockBatch, items[1]);
-    expect(mockFn).toHaveBeenCalledWith(mockBatch, items[2]);
+    expect(mockFn).toHaveBeenCalledWith(mockBatch, items[0], 0);
+    expect(mockFn).toHaveBeenCalledWith(mockBatch, items[1], 1);
+    expect(mockFn).toHaveBeenCalledWith(mockBatch, items[2], 2);
     expect(mockBatch.commit).toHaveBeenCalledTimes(1);
   });
 
@@ -69,9 +69,9 @@ describe("commitInChunks", () => {
     expect(mockFn).toHaveBeenCalledTimes(items.length);
     expect(mockBatch.commit).toHaveBeenCalledTimes(expectedChunks);
 
-    // Verify that the set method was called for each item
-    for (const item of items) {
-      expect(mockFn).toHaveBeenCalledWith(expect.any(Object), item);
+    // Verify that the set method was called for each item with correct index
+    for (let i = 0; i < items.length; i++) {
+      expect(mockFn).toHaveBeenCalledWith(expect.any(Object), items[i], i);
     }
   });
 
@@ -94,7 +94,7 @@ describe("commitInChunks", () => {
 
     await commitInChunks(firebaseAdmin, items, mockFn);
 
-    expect(mockFn).toHaveBeenCalledWith(mockBatch, items[0]);
+    expect(mockFn).toHaveBeenCalledWith(mockBatch, items[0], 0);
     expect(mockBatch.set).toHaveBeenCalledWith(
       { ref: "some_ref" },
       { name: "item1" },
