@@ -28,6 +28,7 @@ export interface SyncStateDoc {
   };
   triggeredBy: "schedule" | "manual";
   environment: "github-actions" | "local";
+  expireAt?: Timestamp; // TTL field for automatic cleanup after 30 days
 }
 
 export interface DailyUsageDoc {
@@ -44,4 +45,5 @@ export interface DailyUsageDoc {
     reads: number;
     writes: number;
   };
+  expireAt?: Timestamp; // TTL field for automatic cleanup after 1 year
 }

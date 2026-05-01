@@ -2,6 +2,15 @@ import { Timestamp } from "firebase-admin/firestore";
 import { FirebaseAdmin } from "../config/firebase.js";
 import { SyncStateDoc, DailyUsageDoc } from "../types/sync.js";
 
+const MAX_SYNC_STATE_TTL_DAYS = parseInt(
+  process.env.MAX_SYNC_STATE_TTL_DAYS || "30",
+  10,
+);
+const MAX_DAILY_USAGE_TTL_DAYS = parseInt(
+  process.env.MAX_DAILY_USAGE_TTL_DAYS || "60",
+  10,
+);
+
 const SPARK_PLAN_LIMITS = {
   reads: 50000,
   writes: 20000,
@@ -65,15 +74,20 @@ export class SyncMonitor {
   async start(triggeredBy: "schedule" | "manual" = "schedule"): Promise<void> {
     const environment = process.env.GITHUB_ACTIONS ? "github-actions" : "local";
 
+    // Set TTL for automatic cleanup after configured days
+    const expireAt = new Date(this.startTime);
+    expireAt.setDate(expireAt.getDate() + MAX_SYNC_STATE_TTL_DAYS);
+
     const syncState: Omit<SyncStateDoc, "id"> = {
       type: this.type,
       status: "running",
       startedAt: Timestamp.fromDate(this.startTime),
-      syncType: this.syncType,
-      dateRange: this.dateRange,
       metrics: this.metrics,
       triggeredBy,
       environment,
+      expireAt: Timestamp.fromDate(expireAt),
+      ...(this.syncType && { syncType: this.syncType }),
+      ...(this.dateRange && { dateRange: this.dateRange }),
     };
 
     await this.syncStateRef.set(syncState);
@@ -132,7 +146,7 @@ export class SyncMonitor {
       metrics: this.metrics,
     };
 
-    await this.db.collection("sync_state").doc(this.syncId).update(updateData);
+    await this.syncStateRef.update(updateData);
     await this.updateDailyUsage();
 
     console.log(`✅ Completed ${this.type} sync monitoring: ${this.syncId}`);
@@ -156,16 +170,20 @@ export class SyncMonitor {
       },
     };
 
-    await this.db.collection("sync_state").doc(this.syncId).update(updateData);
+    await this.syncStateRef.update(updateData);
     await this.updateDailyUsage();
 
-    console.log(`❌ Failed ${this.type} sync monitoring: ${this.syncId}`);
+    console.error(`❌ Failed ${this.type} sync monitoring: ${this.syncId}`);
   }
 
   private async updateDailyUsage(): Promise<void> {
     const today = new Date().toISOString().split("T")[0];
     const usageDoc = await this.dailyUsageRef.get();
     let currentUsage: DailyUsageDoc;
+
+    // Set TTL for automatic cleanup after configured days
+    const expireAt = new Date();
+    expireAt.setDate(expireAt.getDate() + MAX_DAILY_USAGE_TTL_DAYS);
 
     if (usageDoc.exists) {
       currentUsage = usageDoc.data() as DailyUsageDoc;
@@ -185,6 +203,7 @@ export class SyncMonitor {
           giving: this.type === "giving" ? 1 : 0,
         },
         sparkPlanLimit: SPARK_PLAN_LIMITS,
+        expireAt: Timestamp.fromDate(expireAt),
       };
     }
 

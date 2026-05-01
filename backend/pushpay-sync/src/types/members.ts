@@ -18,7 +18,6 @@ export interface MemberDoc {
   movedTo?: string;
   familyId?: string;
   familyPosition?: string;
-  isMember: boolean;
   takeawayType?: string;
   familyMembers?: FamilyMemberDoc[];
   pushpayCommunityMemberKey?: string;

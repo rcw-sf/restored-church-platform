@@ -26,7 +26,6 @@ describe("github-cache", () => {
       firstName: "John",
       lastName: "Doe",
       email: "john@example.com",
-      isMember: true,
       tenantId: "test-tenant",
     },
     "456": {
@@ -34,7 +33,6 @@ describe("github-cache", () => {
       firstName: "Jane",
       lastName: "Smith",
       email: "jane@example.com",
-      isMember: true,
       tenantId: "test-tenant",
     },
   };

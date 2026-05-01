@@ -1,6 +1,6 @@
 import admin from "firebase-admin";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { fetchPushpayChms } from "../../clients/pushpay.js";
+import { fetchPushpayChms } from "../../clients/chms.js";
 import { FirebaseAdmin } from "../../config/firebase.js";
 import { parseIndividuals } from "../../helpers/pushpay-parser.js";
 import { MemberDoc } from "../../types/members.js";
@@ -12,12 +12,46 @@ import {
   processIndividuals,
 } from "../sync-members.js";
 
-vi.mock("../../clients/pushpay.js");
-vi.mock("../../helpers/pushpay-parser.js");
+type SyncMonitorMock = typeof import("../../utils/sync-monitor.js") & {
+  getMockInstance: () => {
+    start: ReturnType<typeof vi.fn>;
+    recordFirestoreWrites: ReturnType<typeof vi.fn>;
+    recordMembersProcessed: ReturnType<typeof vi.fn>;
+    complete: ReturnType<typeof vi.fn>;
+    fail: ReturnType<typeof vi.fn>;
+  };
+};
 
+vi.mock("../../clients/chms.js");
+vi.mock("../../helpers/pushpay-parser.js");
 vi.mock("../../utils/firestore-batch.js", () => ({
   commitInChunks: vi.fn(),
 }));
+vi.mock("../../utils/cache.js");
+vi.mock("../../utils/github-cache.js");
+vi.mock("../../utils/sleep.js", () => ({
+  sleep: vi.fn().mockResolvedValue(undefined),
+}));
+vi.mock("../../utils/sync-monitor.js", () => {
+  const mockMethods = {
+    start: vi.fn(),
+    recordFirestoreWrites: vi.fn(),
+    recordMembersProcessed: vi.fn(),
+    complete: vi.fn(),
+    fail: vi.fn(),
+  };
+
+  return {
+    SyncMonitor: class {
+      start = mockMethods.start;
+      recordFirestoreWrites = mockMethods.recordFirestoreWrites;
+      recordMembersProcessed = mockMethods.recordMembersProcessed;
+      complete = mockMethods.complete;
+      fail = mockMethods.fail;
+    },
+    getMockInstance: () => mockMethods,
+  };
+});
 
 vi.mock("../../config/firebase.js", () => ({
   FirebaseAdmin: vi.fn().mockImplementation(function () {
@@ -94,7 +128,7 @@ describe("syncMembers service", () => {
               },
             },
             {
-              label: "Type",
+              label: "Type (PM, Restoration, Baptism or Mission Team)",
               selection: {
                 // Type as object
                 "#text": "Baptism",
@@ -127,7 +161,6 @@ describe("syncMembers service", () => {
     await processIndividuals(
       firebaseAdmin,
       mockIndividuals as PushpayIndividual[],
-      true,
     );
 
     expect(commitInChunks).toHaveBeenCalled();
@@ -153,7 +186,6 @@ describe("syncMembers service", () => {
       email: "john@doe.com",
       birthdate: "1980-05-20",
       type: "Baptism",
-      isMember: true,
       updatedAt: expect.objectContaining({ type: "serverTimestamp" }),
     });
   });
@@ -167,70 +199,12 @@ describe("syncMembers service", () => {
       mockIndividuals as PushpayIndividual[],
     );
 
-    const result = await processGroup(firebaseAdmin, 10, true, "TestType");
+    const result = await processGroup(firebaseAdmin, 10);
 
     expect(mockedFetchPushpayChms).toHaveBeenCalledWith(10);
     expect(mockedParseIndividuals).toHaveBeenCalledWith(mockXml);
-    expect(result).toBe(1);
+    expect(result.individuals).toHaveLength(1);
     expect(mockedCommitInChunks).toHaveBeenCalled();
-  });
-
-  it("processIndividuals should correctly map non-member fields", async () => {
-    const mockIndividuals: Partial<PushpayIndividual>[] = [
-      {
-        id: "fallaway-1",
-        first_name: "Fallen",
-        last_name: "Away",
-        membership_end: "2023-12-31",
-        user_defined_text_fields: {
-          user_defined_text_field: [
-            {
-              label: "Reason for Fallaway",
-              text: { "#text": "Moved to another city" },
-            },
-            {
-              label: "Moved To (for Moveaways)",
-              text: { "#text": "New York" },
-            },
-          ],
-        },
-      },
-    ];
-
-    mockedCommitInChunks.mockImplementation(
-      async (
-        adminInstance: FirebaseAdmin,
-        items: unknown[],
-        fn: (batch: admin.firestore.WriteBatch, item: unknown) => void,
-      ) => {
-        const mockBatch = adminInstance
-          .firestore()
-          .batch() as unknown as admin.firestore.WriteBatch;
-        for (const item of items) {
-          fn(mockBatch, item);
-        }
-      },
-    );
-
-    await processIndividuals(
-      firebaseAdmin,
-      mockIndividuals as PushpayIndividual[],
-      false,
-      "Fallaway",
-    );
-
-    const firstCall = mockedCommitInChunks.mock.calls[0];
-    const docs = firstCall[1] as { id: string; data: MemberDoc }[];
-    const memberDoc = docs[0].data;
-
-    expect(memberDoc).toMatchObject({
-      individualId: "fallaway-1",
-      isMember: false,
-      membershipStopDate: "2023-12-31",
-      reasonForFallaway: "Moved to another city",
-      movedTo: "New York",
-      takeawayType: "Fallaway",
-    });
   });
 
   it("processIndividuals should log total pledge amount", async () => {
@@ -256,24 +230,50 @@ describe("syncMembers service", () => {
     await processIndividuals(
       firebaseAdmin,
       mockIndividuals as PushpayIndividual[],
-      true,
     );
 
     expect(console.log).toHaveBeenCalledWith("Total pledge:", 100);
   });
 
-  it("syncMembers should orchestrate the group sync", async () => {
+  it("syncMembers should orchestrate the group sync with monitoring", async () => {
+    // Ensure consistent behavior across local and CI environments
+    delete process.env.GITHUB_ACTIONS;
+
+    const syncMonitorMock = await import("../../utils/sync-monitor.js");
+    const getMockInstance = (syncMonitorMock as SyncMonitorMock)
+      .getMockInstance;
+
     mockedFetchPushpayChms.mockResolvedValue("<xml/>");
     mockedParseIndividuals.mockReturnValue([]);
 
     await syncMembers(firebaseAdmin);
 
-    expect(mockedFetchPushpayChms).toHaveBeenCalledTimes(1);
+    const monitorInstance = getMockInstance();
+    expect(monitorInstance.start).toHaveBeenCalledWith("manual");
+    expect(monitorInstance.recordMembersProcessed).toHaveBeenCalledWith(0);
+    expect(monitorInstance.complete).toHaveBeenCalled();
+    // 5 processGroup calls: 2 (active), 40-43 (takeaways to delete)
+    expect(mockedFetchPushpayChms).toHaveBeenCalledTimes(5);
     expect(mockedFetchPushpayChms).toHaveBeenCalledWith(2);
   });
 
+  it("syncMembers should handle errors and fail monitoring", async () => {
+    const syncMonitorMock =
+      (await import("../../utils/sync-monitor.js")) as SyncMonitorMock;
+    const getMockInstance = syncMonitorMock.getMockInstance;
+
+    const error = new Error("API Error");
+    mockedFetchPushpayChms.mockRejectedValue(error);
+
+    await expect(syncMembers(firebaseAdmin)).rejects.toThrow("API Error");
+
+    const monitorInstance = getMockInstance();
+    expect(monitorInstance.start).toHaveBeenCalled();
+    expect(monitorInstance.fail).toHaveBeenCalledWith(error);
+  });
+
   it("should handle empty individuals list gracefully", async () => {
-    await processIndividuals(firebaseAdmin, [], true);
+    await processIndividuals(firebaseAdmin, []);
 
     expect(mockedCommitInChunks).not.toHaveBeenCalled();
     expect(console.log).toHaveBeenCalledWith("No members found");
@@ -306,11 +306,9 @@ describe("syncMembers service", () => {
         mockIndividual as PushpayIndividual,
       ]);
 
-      await processIndividuals(
-        firebaseAdmin,
-        [mockIndividual as PushpayIndividual],
-        true,
-      );
+      await processIndividuals(firebaseAdmin, [
+        mockIndividual as PushpayIndividual,
+      ]);
 
       const lastCallIdx = mockedCommitInChunks.mock.calls.length - 1;
       const lastCall = mockedCommitInChunks.mock.calls[lastCallIdx];
