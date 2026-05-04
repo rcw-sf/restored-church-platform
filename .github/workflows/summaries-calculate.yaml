@@ -1,0 +1,61 @@
+---
+name: Calculate Weekly Summaries
+
+on:
+  schedule:
+    # Daily at 4:00 AM UTC (adjust as needed)
+    - cron: "0 4 * * *"
+    # Sunday hourly from 3 PM to 11 PM UTC (for more frequent updates)
+    - cron: "0 15-23 * * 0"
+  workflow_dispatch:
+    inputs:
+      from:
+        description: "Start date (ISO format, e.g., 2024-01-01)"
+        required: false
+        type: string
+      to:
+        description: "End date (ISO format, e.g., 2024-01-07)"
+        required: false
+        type: string
+
+jobs:
+  calculate-summaries:
+    name: Calculate Weekly Giving Summaries
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ secrets.GOOGLE_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GOOGLE_SERVICE_ACCOUNT }}
+
+      - uses: pnpm/action-setup@v5
+        name: Install pnpm
+        with:
+          cache: true
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Setup Google Cloud credentials
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.FIREBASE_PROJECT_ID }}
+
+      - name: Inject .env file
+        run: |
+          cd backend/pushpay-sync
+          printf "%s" "${{ secrets.PUSHPAY_SYNC_ENV_FILE }}" > .env
+
+      - name: Calculate Summaries
+        env:
+          SYNC_TYPE: daily
+          GITHUB_ACTIONS: true
+          SYNC_FROM: ${{ github.event.inputs.from }}
+          SYNC_TO: ${{ github.event.inputs.to }}
+        run: pnpm pushpay-sync:calculate-summaries
