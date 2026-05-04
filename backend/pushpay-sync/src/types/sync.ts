@@ -1,13 +1,14 @@
 import { Timestamp } from "firebase-admin/firestore";
+import { Environment } from "../env";
 
 export interface SyncStateDoc {
   id: string;
-  type: "member" | "giving";
+  type: "member" | "giving" | "summaries";
   status: "running" | "completed" | "failed";
   startedAt: Timestamp;
   completedAt?: Timestamp;
   duration?: number; // in seconds
-  syncType?: "today" | "yesterday" | "weekly";
+  syncType?: Environment["syncType"];
   dateRange?: {
     from: string;
     to: string;
@@ -40,6 +41,7 @@ export interface DailyUsageDoc {
   syncs: {
     member: number;
     giving: number;
+    summaries: number;
   };
   sparkPlanLimit: {
     reads: number;

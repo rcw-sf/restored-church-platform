@@ -6,6 +6,7 @@
   "scripts": {
     "sync-members": "tsx src/run-sync-members.ts",
     "sync-giving": "tsx src/run-sync-giving.ts",
+    "calculate-summaries": "tsx src/run-calculate-summaries.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest --watch",

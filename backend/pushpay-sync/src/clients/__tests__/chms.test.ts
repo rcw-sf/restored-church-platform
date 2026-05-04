@@ -21,6 +21,13 @@ describe("fetchPushpayChms", () => {
     specialMissionsFundKey: "missions",
     firebaseProjectId: "test-project",
     tenantId: "test-tenant",
+    syncType: "yesterday" as const,
+    pushpayRateLimitMs: 6000,
+    maxSyncStateTtlDays: 30,
+    maxDailyUsageTtlDays: 60,
+    transactionTtlDays: 30,
+    weeklyGivingSummaryTtlDays: 90,
+    githubActionCachePath: "/tmp",
   };
 
   beforeEach(() => {

@@ -1,10 +1,22 @@
+// Valid regions after normalization (see getNormalizedRegion in xml-field-extractors.ts)
+export type Region =
+  | "San Mateo"
+  | "San Francisco"
+  | "San Jose"
+  | "Berkeley"
+  | "Contra Costa"
+  | "Hayward"
+  | "";
+
+export type SuperRegion = "Peninsula" | "South Bay" | "East Bay" | "";
+
 export interface MemberDoc {
   individualId: string;
   firstName: string;
   lastName: string;
   gender?: string;
-  region?: string;
-  superRegion?: string;
+  region?: Region;
+  superRegion?: SuperRegion;
   ministry?: string;
   pledge?: number;
   phone?: string;
@@ -32,4 +44,19 @@ export interface FamilyMemberDoc {
   individualId?: string;
   fullName?: string;
   familyPosition?: string;
+}
+
+export interface RegionStats {
+  count: number;
+  totalPledge: number;
+}
+
+export interface MemberStatisticsDoc {
+  totalPledge: number;
+  memberCount: number;
+  membersWithPledge: number;
+  averagePledge: number;
+  regionBreakdown: Record<Region, RegionStats>;
+  calculatedAt: FirebaseFirestore.Timestamp;
+  tenantId?: string;
 }

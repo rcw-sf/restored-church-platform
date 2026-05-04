@@ -1,8 +1,10 @@
 import { FirebaseAdmin } from "../config/firebase.js";
+import { getEnvironment } from "../env.js";
 import { MemberLookup } from "../types/giving.js";
 import { MemberDoc } from "../types/members.js";
 
 export async function loadMappingData(firebaseAdmin: FirebaseAdmin) {
+  const { tenantId } = getEnvironment();
   const memberLookup: MemberLookup = {};
 
   // Optimize: Only load fields we need, paginate for large datasets
@@ -14,7 +16,7 @@ export async function loadMappingData(firebaseAdmin: FirebaseAdmin) {
     let query = firebaseAdmin
       .firestore()
       .collection("tenants")
-      .doc(process.env.TENANT_ID || "default")
+      .doc(tenantId)
       .collection("members")
       .select(
         "individualId",
@@ -25,7 +27,6 @@ export async function loadMappingData(firebaseAdmin: FirebaseAdmin) {
         "ministry",
         "familyId",
         "familyMembers",
-        "isMember",
         "pushpayCommunityMemberKey",
         "pushpaySpouseCommunityMemberKey",
       )

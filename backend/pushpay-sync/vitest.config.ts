@@ -28,6 +28,8 @@ export default defineConfig({
         "src/config",
         "src/env.ts",
         "src/run-sync-members.ts",
+        "src/run-sync-giving.ts",
+        "src/run-calculate-summaries.ts",
         "src/utils/sleep.ts",
       ],
       thresholds: {

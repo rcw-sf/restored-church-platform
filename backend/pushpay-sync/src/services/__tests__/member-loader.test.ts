@@ -172,7 +172,6 @@ describe("loadMappingData", () => {
       "ministry",
       "familyId",
       "familyMembers",
-      "isMember",
       "pushpayCommunityMemberKey",
       "pushpaySpouseCommunityMemberKey",
     );

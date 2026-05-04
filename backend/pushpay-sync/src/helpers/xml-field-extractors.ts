@@ -1,3 +1,5 @@
+import { Region, SuperRegion } from "../types/members";
+
 /**
  * XML Field Extractors
  *
@@ -76,7 +78,7 @@ export function getSelectFromFields(
 /**
  * Determines super region based on region name.
  */
-export function getSuperRegion(region: string | undefined): string {
+export function getSuperRegion(region: string | undefined): SuperRegion {
   if (!region) return "";
 
   switch (region) {
@@ -103,18 +105,16 @@ export function getSuperRegion(region: string | undefined): string {
 /**
  * Determines the actual region name, with fallback logic for special cases.
  */
-export function getNormalizedRegion(region: string | undefined): string {
+export function getNormalizedRegion(region: string | undefined): Region {
   if (!region) return "";
 
-  // South Bay and Santa Cruz are grouped under San Jose
-  if (region === "South Bay" || region === "Santa Cruz") {
-    return "San Jose";
+  switch (region) {
+    case "South Bay":
+    case "Santa Cruz":
+      return "San Jose";
+    case "Outer East":
+      return "Contra Costa";
+    default:
+      return region as Region;
   }
-
-  // Outer East is grouped under Contra Costa
-  if (region === "Outer East") {
-    return "Contra Costa";
-  }
-
-  return region;
 }
