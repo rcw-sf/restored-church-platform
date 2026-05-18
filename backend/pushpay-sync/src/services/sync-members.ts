@@ -13,7 +13,11 @@ import {
   extractTextValue,
 } from "../helpers/xml-field-extractors.js";
 import { MemberLookup } from "../types/giving.js";
-import { MemberDoc } from "../types/members.js";
+import {
+  MemberDoc,
+  MemberStatisticsDoc,
+  RegionStats,
+} from "../types/members.js";
 import {
   PushpayIndividual,
   PushpayTextField,
@@ -27,29 +31,20 @@ import { sleep } from "../utils/sleep.js";
 import { SyncMonitor } from "../utils/sync-monitor.js";
 
 export async function syncMembers(firebaseAdmin: FirebaseAdmin) {
-  const env = getEnvironment();
+  const { pushpayRateLimitMs, syncType, tenantId } = getEnvironment();
   const monitor = new SyncMonitor(
     firebaseAdmin,
     "member",
     undefined,
     undefined,
-    env.tenantId,
+    tenantId,
   );
 
   const triggeredBy = process.env.GITHUB_ACTIONS ? "schedule" : "manual";
   await monitor.start(triggeredBy);
 
-  // Configurable rate limit delay (milliseconds between API calls)
-  const RATE_LIMIT_MS = parseInt(
-    process.env.PUSHPAY_RATE_LIMIT_MS || "6000",
-    10,
-  );
-
-  // Sync type: 'all' (sync everyone) or 'only-modified' (default - last 24h only)
-  const SYNC_TYPE = process.env.SYNC_TYPE || "only-modified";
-
   console.log(
-    `🔄 Starting ${SYNC_TYPE} sync with ${RATE_LIMIT_MS}ms rate limit`,
+    `🔄 Starting ${syncType} sync with ${pushpayRateLimitMs}ms rate limit`,
   );
 
   try {
@@ -58,10 +53,10 @@ export async function syncMembers(firebaseAdmin: FirebaseAdmin) {
       2,
       undefined,
       monitor,
-      SYNC_TYPE,
+      syncType,
     );
 
-    await sleep(RATE_LIMIT_MS);
+    await sleep(pushpayRateLimitMs);
 
     // Collect all takeaway members to delete
     const membersToDelete: PushpayIndividual[] = [];
@@ -71,40 +66,40 @@ export async function syncMembers(firebaseAdmin: FirebaseAdmin) {
       40,
       "Fallaway",
       monitor,
-      SYNC_TYPE,
+      syncType,
     );
     membersToDelete.push(...fallaways.individuals);
 
-    await sleep(RATE_LIMIT_MS);
+    await sleep(pushpayRateLimitMs);
 
     const walkaways = await processGroup(
       firebaseAdmin,
       41,
       "Walkaway",
       monitor,
-      SYNC_TYPE,
+      syncType,
     );
     membersToDelete.push(...walkaways.individuals);
 
-    await sleep(RATE_LIMIT_MS);
+    await sleep(pushpayRateLimitMs);
 
     const transfers = await processGroup(
       firebaseAdmin,
       42,
       "Transfer",
       monitor,
-      SYNC_TYPE,
+      syncType,
     );
     membersToDelete.push(...transfers.individuals);
 
-    await sleep(RATE_LIMIT_MS);
+    await sleep(pushpayRateLimitMs);
 
     const glory = await processGroup(
       firebaseAdmin,
       43,
       "Glory",
       monitor,
-      SYNC_TYPE,
+      syncType,
     );
     membersToDelete.push(...glory.individuals);
 
@@ -118,6 +113,9 @@ export async function syncMembers(firebaseAdmin: FirebaseAdmin) {
     const totalMembersAffected =
       result.memberDocs.length + membersToDelete.length;
     monitor.recordMembersProcessed(totalMembersAffected);
+
+    // Calculate and store member statistics
+    await saveMemberStatistics(firebaseAdmin, result.memberDocs, monitor);
 
     await monitor.complete();
   } catch (error) {
@@ -253,6 +251,15 @@ export async function processIndividuals(
     changedCount++;
     const modifiedAt = parseDateToISO(individual.modified);
 
+    const pushpayCommunityMemberKey = getTextFromFields(
+      textFields,
+      "Pushpay Community Member Key",
+    );
+    const pushpaySpouseCommunityMemberKey = getTextFromFields(
+      textFields,
+      "Pushpay Spouse Community Member Key",
+    );
+
     const doc: MemberDoc = {
       individualId: individual.id,
       firstName: individual.first_name,
@@ -286,6 +293,12 @@ export async function processIndividuals(
       modifiedAt,
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       tenantId: env.tenantId,
+      ...(pushpayCommunityMemberKey && {
+        pushpayCommunityMemberKey,
+      }),
+      ...(pushpaySpouseCommunityMemberKey && {
+        pushpaySpouseCommunityMemberKey,
+      }),
     };
 
     docs.push({ id: individual.id, data: doc });
@@ -366,5 +379,66 @@ async function updateMemberCache(memberDocs: MemberDoc[]) {
     );
   } catch (error) {
     console.warn("⚠️ Failed to update member cache:", error);
+  }
+}
+
+export async function saveMemberStatistics(
+  firebaseAdmin: FirebaseAdmin,
+  memberDocs: MemberDoc[],
+  monitor?: SyncMonitor,
+) {
+  const env = getEnvironment();
+  const db = firebaseAdmin.firestore();
+
+  try {
+    console.log("📊 Calculating member statistics...");
+
+    // Calculate pledge statistics
+    const totalPledge = memberDocs.reduce((sum, m) => sum + (m.pledge || 0), 0);
+    const memberCount = memberDocs.length;
+    const membersWithPledge = memberDocs.filter(
+      (m) => (m.pledge || 0) > 0,
+    ).length;
+    const averagePledge =
+      membersWithPledge > 0 ? totalPledge / membersWithPledge : 0;
+
+    // Group by region
+    const regionStats: Record<string, RegionStats> = {};
+    for (const member of memberDocs) {
+      const region = member.region || "";
+      if (!regionStats[region]) {
+        regionStats[region] = { count: 0, totalPledge: 0 };
+      }
+      regionStats[region].count++;
+      regionStats[region].totalPledge += member.pledge || 0;
+    }
+
+    const statistics: MemberStatisticsDoc = {
+      totalPledge,
+      memberCount,
+      membersWithPledge,
+      averagePledge,
+      regionBreakdown: regionStats,
+      calculatedAt: admin.firestore.Timestamp.now(),
+      tenantId: env.tenantId,
+    };
+
+    // Save to member_statistics collection
+    await db
+      .collection("tenants")
+      .doc(env.tenantId)
+      .collection("member_statistics")
+      .doc("current")
+      .set(statistics);
+
+    if (monitor) {
+      monitor.recordFirestoreWrites(1);
+    }
+
+    console.log(
+      `✅ Saved member statistics: ${memberCount} members, $${totalPledge} total pledge`,
+    );
+  } catch (error) {
+    console.warn("⚠️ Failed to save member statistics:", error);
   }
 }

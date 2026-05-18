@@ -4,18 +4,26 @@ A monorepo containing administrative tools and applications for the Restored Chu
 
 ## Project Structure
 
-This repository is organized into several specialized frontend applications:
+This repository is organized into frontend applications and backend services:
+
+### Frontend Applications
 
 - **[Admin Portal](./frontend/admin)**: A dashboard for managing church resources, financial oversight, and platform health.
 - **[Deposit Counter](./frontend/deposit-counter)**: A utility for volunteers to accurately count and document physical cash and check deposits.
+
+### Backend Services
+
+- **[Pushpay Sync](./backend/pushpay-sync)**: A Node.js service that synchronizes member and giving data from the Pushpay ChMS API into Firebase Firestore. Includes scheduled workflows for weekly giving summaries and member statistics.
 
 ## Technology Stack
 
 - **Package Manager**: [pnpm](https://pnpm.io/)
 - **Frontend**: React + Vite + TypeScript
+- **Backend**: Node.js + TypeScript
 - **Styling**: Tailwind CSS + daisyUI
 - **Backend/Database**: Firebase Firestore
 - **Testing**: Vitest + React Testing Library
+- **Scheduling**: GitHub Actions (for automated sync workflows)
 
 ## Getting Started
 
@@ -31,10 +39,18 @@ This repository is organized into several specialized frontend applications:
     pnpm install
     ```
 2.  **Configure Environment Variables**:
-    The Admin Portal requires Firebase configuration. Copy the example file and fill in your keys:
-    ```bash
-    cp frontend/admin/.env.example frontend/admin/.env
-    ```
+    - **Admin Portal**: Copy the example file and fill in your keys:
+      ```bash
+      cp frontend/admin/.env.example frontend/admin/.env
+      ```
+    - **Pushpay Sync**: Copy and configure the backend environment:
+      ```bash
+      cp backend/pushpay-sync/.env.example backend/pushpay-sync/.env
+      ```
+      Then authenticate with Google Cloud for Firestore access:
+      ```bash
+      gcloud auth application-default login
+      ```
 
 ### Development
 
@@ -44,6 +60,30 @@ You can start the development servers for specific applications directly from th
 - **Deposit Counter**: `pnpm deposit-counter`
 - **Main App**: `pnpm main`
 
+#### Root-level Commands
+
+- **Install dependencies**: `pnpm install`
+- **Run all tests**: `pnpm test`
+- **Lint**: `pnpm lint`
+- **Format**: `pnpm format`
+
+#### Backend Services
+
+The Pushpay Sync service provides scripts for synchronizing data from the Pushpay API to Firestore:
+
+```bash
+# Sync members from Pushpay ChMS
+# SYNC_TYPE can be 'all' or 'only-modified'
+SYNC_TYPE=all pnpm pushpay-sync:members
+
+# Sync giving transactions
+# SYNC_TYPE can be 'weekly', 'yesterday' or 'today'
+SYNC_TYPE=weekly pnpm pushpay-sync:giving
+
+# Calculate weekly giving summaries
+pnpm pushpay-sync:calculate-summaries
+```
+
 ### Testing
 
 The project includes comprehensive test suites for all applications:
@@ -52,6 +92,7 @@ The project includes comprehensive test suites for all applications:
 - **Watch mode (Admin)**: `pnpm test:admin:watch`
 - **Watch mode (Deposit Counter)**: `pnpm test:deposit-counter:watch`
 - **Coverage Report**: `pnpm test:coverage`
+- **Backend tests**: `pnpm test:pushpay-sync`
 
 ### Deployment
 

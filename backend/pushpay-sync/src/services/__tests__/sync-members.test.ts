@@ -10,6 +10,7 @@ import {
   syncMembers,
   processGroup,
   processIndividuals,
+  saveMemberStatistics,
 } from "../sync-members.js";
 
 type SyncMonitorMock = typeof import("../../utils/sync-monitor.js") & {
@@ -29,6 +30,11 @@ vi.mock("../../utils/firestore-batch.js", () => ({
 }));
 vi.mock("../../utils/cache.js");
 vi.mock("../../utils/github-cache.js");
+vi.mock("../../env.js", () => ({
+  getEnvironment: vi.fn().mockReturnValue({
+    tenantId: "test-tenant",
+  }),
+}));
 vi.mock("../../utils/sleep.js", () => ({
   sleep: vi.fn().mockResolvedValue(undefined),
 }));
@@ -72,7 +78,19 @@ vi.mock("firebase-admin", () => {
   const FieldValue = {
     serverTimestamp: vi.fn(() => ({ type: "serverTimestamp" })),
   };
-  const firestoreMock = Object.assign(vi.fn(), { FieldValue });
+  const Timestamp = {
+    now: vi.fn(() => ({
+      type: "timestamp",
+      seconds: 1234567890,
+      nanoseconds: 0,
+    })),
+    fromDate: vi.fn((date: Date) => ({
+      type: "timestamp",
+      seconds: date.getTime() / 1000,
+      nanoseconds: 0,
+    })),
+  };
+  const firestoreMock = Object.assign(vi.fn(), { FieldValue, Timestamp });
   return {
     default: {
       firestore: firestoreMock,
@@ -319,5 +337,142 @@ describe("syncMembers service", () => {
 
       expect(docs[0].data.superRegion).toBe(expectedSuper);
     }
+  });
+
+  it("should calculate member statistics with pledge totals and region breakdown", async () => {
+    const mockMemberDocs: MemberDoc[] = [
+      {
+        individualId: "member-1",
+        firstName: "John",
+        lastName: "Doe",
+        pledge: 100,
+        region: "San Mateo",
+      },
+      {
+        individualId: "member-2",
+        firstName: "Jane",
+        lastName: "Smith",
+        pledge: 200,
+        region: "San Mateo",
+      },
+      {
+        individualId: "member-3",
+        firstName: "Bob",
+        lastName: "Jones",
+        pledge: 50,
+        region: "Berkeley",
+      },
+      {
+        individualId: "member-4",
+        firstName: "Alice",
+        lastName: "Brown",
+        // No pledge
+        region: "San Jose",
+      },
+    ];
+
+    const mockSet = vi.fn();
+    const mockDoc = vi.fn().mockReturnValue({ set: mockSet });
+    const mockCollection = vi.fn().mockReturnValue({ doc: mockDoc });
+    const mockTenantDoc = vi.fn().mockReturnValue({
+      collection: mockCollection,
+    });
+
+    firebaseAdmin.firestore = vi.fn().mockReturnValue({
+      collection: vi.fn().mockReturnValue({
+        doc: mockTenantDoc,
+      }),
+    }) as unknown as typeof firebaseAdmin.firestore;
+
+    await saveMemberStatistics(firebaseAdmin, mockMemberDocs);
+
+    // Verify member_statistics/current was written
+    expect(mockCollection).toHaveBeenCalledWith("member_statistics");
+    expect(mockDoc).toHaveBeenCalledWith("current");
+    expect(mockSet).toHaveBeenCalled();
+
+    const statsCall = mockSet.mock.calls[0][0];
+    expect(statsCall.totalPledge).toBe(350); // 100 + 200 + 50
+    expect(statsCall.memberCount).toBe(4);
+    expect(statsCall.membersWithPledge).toBe(3);
+    expect(statsCall.averagePledge).toBe(350 / 3);
+    expect(statsCall.regionBreakdown["San Mateo"]).toEqual({
+      count: 2,
+      totalPledge: 300,
+    });
+    expect(statsCall.regionBreakdown["Berkeley"]).toEqual({
+      count: 1,
+      totalPledge: 50,
+    });
+    expect(statsCall.regionBreakdown["San Jose"]).toEqual({
+      count: 1,
+      totalPledge: 0,
+    });
+  });
+
+  it("should handle zero members with pledge in statistics", async () => {
+    const mockMemberDocs: MemberDoc[] = [
+      {
+        individualId: "member-1",
+        firstName: "John",
+        lastName: "Doe",
+        // No pledge
+        region: "San Mateo",
+      },
+    ];
+
+    const mockSet = vi.fn();
+    const mockDoc = vi.fn().mockReturnValue({ set: mockSet });
+    const mockCollection = vi.fn().mockReturnValue({ doc: mockDoc });
+    const mockTenantDoc = vi.fn().mockReturnValue({
+      collection: mockCollection,
+    });
+
+    firebaseAdmin.firestore = vi.fn().mockReturnValue({
+      collection: vi.fn().mockReturnValue({
+        doc: mockTenantDoc,
+      }),
+    }) as unknown as typeof firebaseAdmin.firestore;
+
+    await saveMemberStatistics(firebaseAdmin, mockMemberDocs);
+
+    expect(mockSet).toHaveBeenCalledTimes(1);
+    const statsCall = mockSet.mock.calls[0][0];
+    expect(statsCall.totalPledge).toBe(0);
+    expect(statsCall.membersWithPledge).toBe(0);
+    expect(statsCall.averagePledge).toBe(0);
+  });
+
+  it("should record Firestore write when monitor is provided", async () => {
+    const mockMemberDocs: MemberDoc[] = [
+      {
+        individualId: "member-1",
+        firstName: "John",
+        lastName: "Doe",
+        pledge: 100,
+        region: "San Mateo",
+      },
+    ];
+
+    const mockSet = vi.fn();
+    const mockDoc = vi.fn().mockReturnValue({ set: mockSet });
+    const mockCollection = vi.fn().mockReturnValue({ doc: mockDoc });
+    const mockTenantDoc = vi.fn().mockReturnValue({
+      collection: mockCollection,
+    });
+
+    firebaseAdmin.firestore = vi.fn().mockReturnValue({
+      collection: vi.fn().mockReturnValue({
+        doc: mockTenantDoc,
+      }),
+    }) as unknown as typeof firebaseAdmin.firestore;
+
+    const mockMonitor = {
+      recordFirestoreWrites: vi.fn(),
+    } as unknown as import("../../utils/sync-monitor.js").SyncMonitor;
+
+    await saveMemberStatistics(firebaseAdmin, mockMemberDocs, mockMonitor);
+
+    expect(mockMonitor.recordFirestoreWrites).toHaveBeenCalledWith(1);
   });
 });

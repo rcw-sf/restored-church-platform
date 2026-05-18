@@ -85,6 +85,7 @@ export interface PushpayTransaction {
   payer: {
     fullName: string;
     email: string;
+    exportKey?: string;
   };
   communityMember?: {
     key: string;

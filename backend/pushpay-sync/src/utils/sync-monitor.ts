@@ -1,15 +1,7 @@
 import { Timestamp } from "firebase-admin/firestore";
 import { FirebaseAdmin } from "../config/firebase.js";
+import { Environment, getEnvironment } from "../env.js";
 import { SyncStateDoc, DailyUsageDoc } from "../types/sync.js";
-
-const MAX_SYNC_STATE_TTL_DAYS = parseInt(
-  process.env.MAX_SYNC_STATE_TTL_DAYS || "30",
-  10,
-);
-const MAX_DAILY_USAGE_TTL_DAYS = parseInt(
-  process.env.MAX_DAILY_USAGE_TTL_DAYS || "60",
-  10,
-);
 
 const SPARK_PLAN_LIMITS = {
   reads: 50000,
@@ -44,8 +36,8 @@ export class SyncMonitor {
 
   constructor(
     firebaseAdmin: FirebaseAdmin,
-    private type: "member" | "giving",
-    private syncType?: "today" | "yesterday" | "weekly",
+    private type: "member" | "giving" | "summaries",
+    private syncType?: Environment["syncType"],
     private dateRange?: { from: string; to: string },
     private tenantId: string = "default",
   ) {
@@ -73,10 +65,11 @@ export class SyncMonitor {
 
   async start(triggeredBy: "schedule" | "manual" = "schedule"): Promise<void> {
     const environment = process.env.GITHUB_ACTIONS ? "github-actions" : "local";
+    const { maxSyncStateTtlDays } = getEnvironment();
 
     // Set TTL for automatic cleanup after configured days
     const expireAt = new Date(this.startTime);
-    expireAt.setDate(expireAt.getDate() + MAX_SYNC_STATE_TTL_DAYS);
+    expireAt.setDate(expireAt.getDate() + maxSyncStateTtlDays);
 
     const syncState: Omit<SyncStateDoc, "id"> = {
       type: this.type,
@@ -177,13 +170,14 @@ export class SyncMonitor {
   }
 
   private async updateDailyUsage(): Promise<void> {
+    const { maxDailyUsageTtlDays } = getEnvironment();
     const today = new Date().toISOString().split("T")[0];
     const usageDoc = await this.dailyUsageRef.get();
     let currentUsage: DailyUsageDoc;
 
     // Set TTL for automatic cleanup after configured days
     const expireAt = new Date();
-    expireAt.setDate(expireAt.getDate() + MAX_DAILY_USAGE_TTL_DAYS);
+    expireAt.setDate(expireAt.getDate() + maxDailyUsageTtlDays);
 
     if (usageDoc.exists) {
       currentUsage = usageDoc.data() as DailyUsageDoc;
@@ -201,6 +195,7 @@ export class SyncMonitor {
         syncs: {
           member: this.type === "member" ? 1 : 0,
           giving: this.type === "giving" ? 1 : 0,
+          summaries: this.type === "summaries" ? 1 : 0,
         },
         sparkPlanLimit: SPARK_PLAN_LIMITS,
         expireAt: Timestamp.fromDate(expireAt),
@@ -293,5 +288,29 @@ export class SyncMonitor {
     return snapshot.docs.map(
       (doc) => ({ id: doc.id, ...doc.data() }) as SyncStateDoc,
     );
+  }
+
+  static async getLastSuccessfulGivingSync(
+    firebaseAdmin: FirebaseAdmin,
+    tenantId: string,
+  ): Promise<SyncStateDoc | null> {
+    const snapshot = await firebaseAdmin
+      .firestore()
+      .collection("tenants")
+      .doc(tenantId)
+      .collection("sync_state")
+      .where("type", "==", "giving")
+      .where("status", "==", "completed")
+      .where("dateRange", "!=", null)
+      .orderBy("startedAt", "desc")
+      .limit(1)
+      .get();
+
+    if (snapshot.empty) {
+      return null;
+    }
+
+    const doc = snapshot.docs[0];
+    return { id: doc.id, ...doc.data() } as SyncStateDoc;
   }
 }
