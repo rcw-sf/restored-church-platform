@@ -1,0 +1,84 @@
+name: Giving Sync
+
+on:
+  # schedule:
+  #   # Daily at 1 AM UTC for yesterday's giving
+  #   - cron: "0 1 * * *"
+  #   # Hourly on Sundays from 10 AM to 11:59 PM UTC for weekly giving
+  #   - cron: "0 10-23 * * 0"
+  workflow_dispatch:
+    inputs:
+      sync_type:
+        description: "Sync type: today, yesterday or weekly"
+        required: false
+        type: choice
+        options:
+          - weekly
+          - yesterday
+          - today
+        default: "yesterday"
+
+jobs:
+  sync-giving:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ secrets.GOOGLE_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GOOGLE_SERVICE_ACCOUNT }}
+
+      - uses: pnpm/action-setup@v5
+        name: Install pnpm
+        with:
+          cache: true
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Cache member data
+        uses: actions/cache@v4
+        with:
+          path: ~/member-data-cache
+          key: member-data-${{ hashFiles('backend/pushpay-sync/src/services/giving-sync.ts') }}-${{ github.run_attempt }}
+          restore-keys: |
+            member-data-${{ hashFiles('backend/pushpay-sync/src/services/giving-sync.ts') }}-
+            member-data-
+
+      - name: Setup cache directory
+        run: |
+          mkdir -p ~/member-data-cache
+          echo "GITHUB_ACTION_CACHE_PATH=~/member-data-cache" >> $GITHUB_ENV
+
+      - name: Setup Google Cloud credentials
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.FIREBASE_PROJECT_ID }}
+
+      - name: Inject .env file
+        run: |
+          cd backend/pushpay-sync
+          printf "%s" "${{ secrets.PUSHPAY_SYNC_ENV_FILE }}" > .env
+
+      - name: Run giving sync
+        env:
+          SYNC_TYPE: ${{ github.event.inputs.sync_type || (github.event.schedule == '0 1 * * *' && 'yesterday' || 'weekly') }}
+        run: |
+          pnpm pushpay-sync:giving
+
+      - name: Upload cache artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: member-data-cache
+          path: ~/member-data-cache/
+          retention-days: 7
