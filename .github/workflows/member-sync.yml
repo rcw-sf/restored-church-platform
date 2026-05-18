@@ -5,7 +5,15 @@ on:
   #   # Daily at 1 AM UTC (6 PM EST, 3 PM PST)
   #   - cron: "0 1 * * *"
   workflow_dispatch:
-
+    inputs:
+      sync_type:
+        description: "Sync type: all or only-modified"
+        required: false
+        type: choice
+        options:
+          - only-modified
+          - all
+        default: "only-modified"
 jobs:
   sync-members:
     runs-on: ubuntu-latest
@@ -58,6 +66,8 @@ jobs:
           printf "%s" "${{ secrets.PUSHPAY_SYNC_ENV_FILE }}" > .env
 
       - name: Run member sync
+        env:
+          SYNC_TYPE: ${{ inputs.sync_type }}
         run: |
           pnpm pushpay-sync:members
 
