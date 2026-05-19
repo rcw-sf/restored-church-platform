@@ -73,7 +73,4 @@ export async function main() {
   }
 }
 
-// Only run main() when this file is executed directly (not during tests)
-if (process.env.VITEST !== "true" && !process.env.CI) {
-  main();
-}
+main();
