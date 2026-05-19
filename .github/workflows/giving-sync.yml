@@ -21,6 +21,8 @@ on:
 jobs:
   sync-giving:
     runs-on: ubuntu-latest
+    env:
+      GITHUB_ACTION_CACHE_PATH: ${{ github.workspace }}/member-data-cache
     permissions:
       contents: read
       actions: read
@@ -45,19 +47,18 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Setup cache directory
+        run: |
+          mkdir -p ${{ env.GITHUB_ACTION_CACHE_PATH }}
+
       - name: Cache member data
         uses: actions/cache@v4
         with:
-          path: ~/member-data-cache
+          path: ${{ env.GITHUB_ACTION_CACHE_PATH }}
           key: member-data-${{ hashFiles('backend/pushpay-sync/src/services/giving-sync.ts') }}-${{ github.run_attempt }}
           restore-keys: |
             member-data-${{ hashFiles('backend/pushpay-sync/src/services/giving-sync.ts') }}-
             member-data-
-
-      - name: Setup cache directory
-        run: |
-          mkdir -p ~/member-data-cache
-          echo "GITHUB_ACTION_CACHE_PATH=~/member-data-cache" >> $GITHUB_ENV
 
       - name: Setup Google Cloud credentials
         uses: google-github-actions/setup-gcloud@v2
@@ -74,11 +75,3 @@ jobs:
           SYNC_TYPE: ${{ github.event.inputs.sync_type || (github.event.schedule == '0 1 * * *' && 'yesterday' || 'weekly') }}
         run: |
           pnpm pushpay-sync:giving
-
-      - name: Upload cache artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: member-data-cache
-          path: ~/member-data-cache/
-          retention-days: 7
