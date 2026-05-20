@@ -13,21 +13,24 @@ const router = createBrowserRouter([
     path: "/",
     Component: App,
     children: [
-      // Protected Routes
+      // Protected Routes with Tenant ID
       {
-        element: <ProtectedRoute />,
+        path: ":tenantId",
+        element: (
+          <AuthProvider>
+            <ProtectedRoute />
+          </AuthProvider>
+        ),
         children: [
           {
             index: true,
-            path: "/home", // CHANGE LATER
             Component: Home,
           },
         ],
       },
       // Public Routes
       {
-        index: true,
-        path: "/finance",
+        path: "finance",
         Component: Finance,
       },
     ],
@@ -36,10 +39,8 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <AuthProvider>
-      <div className="min-h-screen w-full">
-        <RouterProvider router={router} />
-      </div>
-    </AuthProvider>
+    <div className="min-h-screen w-full">
+      <RouterProvider router={router} />
+    </div>
   </StrictMode>,
 );

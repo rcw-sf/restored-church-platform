@@ -17,6 +17,8 @@ describe("Header Component", () => {
     vi.mocked(useAuth).mockReturnValue({
       user: null,
       loading: false,
+      isAuthorized: false,
+      role: null,
       login: vi.fn(),
       logout: vi.fn(),
     });
@@ -36,6 +38,8 @@ describe("Header Component", () => {
     vi.mocked(useAuth).mockReturnValue({
       user: mockUser as User,
       loading: false,
+      isAuthorized: true,
+      role: "admin",
       login: vi.fn(),
       logout: vi.fn(),
     });
@@ -56,6 +60,8 @@ describe("Header Component", () => {
     vi.mocked(useAuth).mockReturnValue({
       user: { displayName: "User" } as User,
       loading: false,
+      isAuthorized: true,
+      role: "admin",
       login: vi.fn(),
       logout: mockLogout,
     });

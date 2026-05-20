@@ -7,14 +7,32 @@ import {
   signOut,
   type User,
 } from "firebase/auth";
+import { getDoc } from "firebase/firestore";
 import { useContext } from "react";
+import { MemoryRouter } from "react-router";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
 // Mock the internal lib for auth and googleProvider
 vi.mock("../../lib", () => ({
   auth: { currentUser: null },
   googleProvider: {},
+  db: {}, // add db mock
 }));
+
+vi.mock("firebase/firestore", () => ({
+  doc: vi.fn(),
+  getDoc: vi.fn(),
+  getFirestore: vi.fn(),
+}));
+
+vi.mock("react-router", async (importActual) => {
+  const actual = await importActual<typeof import("react-router")>();
+  return {
+    ...actual,
+    useNavigate: () => vi.fn(),
+    useParams: () => ({ tenantId: "test-tenant" }),
+  };
+});
 
 // A simple consumer component to test the context values
 const TestConsumer = () => {
@@ -45,18 +63,29 @@ describe("AuthProvider", () => {
     });
 
     render(
-      <AuthProvider>
-        <TestConsumer />
-      </AuthProvider>,
+      <MemoryRouter>
+        <AuthProvider>
+          <TestConsumer />
+        </AuthProvider>
+      </MemoryRouter>,
     );
 
     // Initial state: loading should be true, user should be null
     expect(screen.getByTestId("loading")).toHaveTextContent("loading");
     expect(screen.getByTestId("user")).toHaveTextContent("no-user");
 
+    // Mock getDoc to simulate an authorized user with a role
+    vi.mocked(getDoc).mockResolvedValueOnce({
+      exists: () => true,
+      data: () => ({ role: "admin" }),
+    } as Awaited<ReturnType<typeof getDoc>>);
+
     // Simulate auth state change (user logs in)
     await act(async () => {
-      authStateCallback({ email: "admin@restoredchurch.com" } as User);
+      authStateCallback({
+        email: "admin@restoredchurch.com",
+        uid: "123",
+      } as User);
     });
 
     expect(screen.getByTestId("loading")).toHaveTextContent("loaded");
@@ -69,9 +98,11 @@ describe("AuthProvider", () => {
     vi.mocked(onAuthStateChanged).mockReturnValue(vi.fn());
 
     render(
-      <AuthProvider>
-        <TestConsumer />
-      </AuthProvider>,
+      <MemoryRouter>
+        <AuthProvider>
+          <TestConsumer />
+        </AuthProvider>
+      </MemoryRouter>,
     );
 
     const loginButton = screen.getByText("Login");
@@ -86,9 +117,11 @@ describe("AuthProvider", () => {
     vi.mocked(onAuthStateChanged).mockReturnValue(vi.fn());
 
     render(
-      <AuthProvider>
-        <TestConsumer />
-      </AuthProvider>,
+      <MemoryRouter>
+        <AuthProvider>
+          <TestConsumer />
+        </AuthProvider>
+      </MemoryRouter>,
     );
 
     const logoutButton = screen.getByText("Logout");

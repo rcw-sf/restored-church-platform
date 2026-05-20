@@ -1,26 +1,69 @@
+import type { AdminDoc, AdminRole } from "@repo/types";
 import {
   onAuthStateChanged,
   signInWithPopup,
   signOut,
   type User,
 } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router";
 import { AuthContext } from "../context/AuthContext";
-import { auth, googleProvider } from "../lib";
+import { auth, db, googleProvider } from "../lib";
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [role, setRole] = useState<AdminRole | null>(null);
+
+  const { tenantId } = useParams();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
+    // If there is no tenantId (e.g. invalid route), we shouldn't attempt to authenticate
+    if (!tenantId) {
+      setLoading(false);
+      return;
+    }
+
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setLoading(true);
+      if (currentUser) {
+        // Check the tenant-scoped admins allowlist by email
+        const adminDocRef = doc(
+          db,
+          "tenants",
+          tenantId,
+          "admins",
+          currentUser.email!.toLowerCase(),
+        );
+        const adminSnap = await getDoc(adminDocRef);
+
+        if (adminSnap.exists()) {
+          const adminData = adminSnap.data() as AdminDoc;
+          setUser(currentUser);
+          setIsAuthorized(true);
+          setRole(adminData.role);
+          // Redirect authorized admin to tenant home
+          navigate(`/${tenantId}`, { replace: true });
+        } else {
+          // Not on the allowlist — keep user but mark as unauthorized
+          setUser(currentUser);
+          setIsAuthorized(false);
+          setRole(null);
+        }
+      } else {
+        setUser(null);
+        setIsAuthorized(false);
+        setRole(null);
+      }
       setLoading(false);
     });
     return () => unsubscribe();
-  }, []);
+  }, [tenantId, navigate]);
 
   const login = async () => {
     await signInWithPopup(auth, googleProvider);
@@ -30,7 +73,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     await signOut(auth);
   };
 
-  const value = { user, loading, login, logout };
+  const value = { user, loading, isAuthorized, role, login, logout };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

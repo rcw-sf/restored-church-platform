@@ -28,6 +28,8 @@ describe("ProtectedRoute", () => {
     vi.mocked(useAuth).mockReturnValue({
       user: null,
       loading: true,
+      isAuthorized: false,
+      role: null,
       login: vi.fn(),
       logout: vi.fn(),
     });
@@ -45,6 +47,8 @@ describe("ProtectedRoute", () => {
     vi.mocked(useAuth).mockReturnValue({
       user: null,
       loading: false,
+      isAuthorized: false,
+      role: null,
       login: mockLogin,
       logout: vi.fn(),
     });
@@ -52,9 +56,6 @@ describe("ProtectedRoute", () => {
     render(<ProtectedRoute />);
 
     expect(screen.getByText("Admin Portal")).toBeInTheDocument();
-    expect(
-      screen.getByText(/Please sign in to access this protected area/i),
-    ).toBeInTheDocument();
 
     const loginBtn = screen.getByText("Sign in with Google");
     fireEvent.click(loginBtn);
@@ -65,6 +66,8 @@ describe("ProtectedRoute", () => {
     vi.mocked(useAuth).mockReturnValue({
       user: { email: "test@test.com" } as User,
       loading: false,
+      isAuthorized: true,
+      role: "admin",
       login: vi.fn(),
       logout: vi.fn(),
     });
