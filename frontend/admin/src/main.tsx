@@ -2,6 +2,7 @@ import App from "@/App";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Finance from "@/pages/Finance";
 import Home from "@/pages/Home";
+import Members from "@/pages/Members";
 import { AuthProvider } from "@/providers/AuthProvider";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
@@ -25,6 +26,10 @@ const router = createBrowserRouter([
           {
             index: true,
             Component: Home,
+          },
+          {
+            path: "members",
+            Component: Members,
           },
         ],
       },

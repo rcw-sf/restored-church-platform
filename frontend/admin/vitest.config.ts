@@ -32,6 +32,7 @@ export default mergeConfig(
           "types/",
           "src/lib",
           "src/context",
+          "**/index.ts",
         ],
         thresholds: {
           lines: 85,
