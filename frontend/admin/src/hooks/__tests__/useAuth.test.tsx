@@ -9,6 +9,8 @@ describe("useAuth", () => {
   it("should return the context value when used within an AuthProvider", () => {
     const mockContextValue = {
       loading: false,
+      isAuthorized: true,
+      role: "admin" as const,
       user: { email: "test@restoredchurch.com" } as User,
       login: vi.fn(),
       logout: vi.fn(),

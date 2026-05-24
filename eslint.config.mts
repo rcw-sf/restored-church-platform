@@ -1,4 +1,5 @@
 import js from "@eslint/js";
+import type { ESLint } from "eslint";
 import react from "eslint-plugin-react";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
@@ -37,9 +38,9 @@ export default defineConfig([
     },
 
     plugins: {
-      react,
-      "react-hooks": reactHooks,
-      "react-refresh": reactRefresh,
+      react: react as unknown as ESLint.Plugin,
+      "react-hooks": reactHooks as unknown as ESLint.Plugin,
+      "react-refresh": reactRefresh as unknown as ESLint.Plugin,
     },
 
     settings: {

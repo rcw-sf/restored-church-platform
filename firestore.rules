@@ -1,0 +1,162 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: tenants/{tenantId}/admins
+    // Document ID: {email}  (Admin's email address)
+    // Fields:
+    //   - email:       string (required) — the admin's Google email
+    //   - displayName: string (required) — human-readable name
+    //   - role:        string (required) — one of: superAdmin | admin | editor
+    //   - addedAt:     timestamp (required) — when access was granted
+    //   - addedBy:     string (required) — UID of the admin who added them
+    //
+    // Collection: tenants/{tenantId}/members
+    // Document ID: auto-generated
+    // Fields: PII — full access restricted to admins/superAdmins. editors can read.
+    //
+
+    // Collection: public_finance_dashboard
+    // Document ID: "current"
+    // Fields: public financial summary — intentionally world-readable
+    //
+    // ===============================================================
+
+    // ---------------------------------------------------------------
+    // Helper Functions
+    // ---------------------------------------------------------------
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Fetch this user's admin doc for a given tenant
+    function getAdminDoc(tenantId) {
+      return get(/databases/$(database)/documents/tenants/$(tenantId)/admins/$(request.auth.token.email));
+    }
+
+    // Does an admin doc exist for this user in the given tenant?
+    function isAdmin(tenantId) {
+      return isAuthenticated() &&
+             request.auth.token.email_verified == true &&
+             exists(/databases/$(database)/documents/tenants/$(tenantId)/admins/$(request.auth.token.email));
+    }
+
+    // Does the user have a specific role?
+    function hasRole(tenantId, role) {
+      return isAdmin(tenantId) && getAdminDoc(tenantId).data.role == role;
+    }
+
+    // Can the user manage other admins? (superAdmin only)
+    function isSuperAdmin(tenantId) {
+      return hasRole(tenantId, 'superAdmin');
+    }
+
+    // Can the user read member data? (superAdmin, admin, editor)
+    function canReadMembers(tenantId) {
+      return isAdmin(tenantId) &&
+             getAdminDoc(tenantId).data.role in ['superAdmin', 'admin', 'editor'];
+    }
+
+    // Can the user write member data directly? (superAdmin, admin)
+    function canWriteMembers(tenantId) {
+      return isAdmin(tenantId) &&
+             getAdminDoc(tenantId).data.role in ['superAdmin', 'admin'];
+    }
+
+    // Validate the shape of an admin document on create/update
+    function isValidAdminDoc() {
+      let d = request.resource.data;
+      let validRoles = ['superAdmin', 'admin', 'editor'];
+      return d.keys().hasOnly(['email', 'displayName', 'role', 'addedAt', 'addedBy']) &&
+             d.keys().hasAll(['email', 'displayName', 'role', 'addedAt', 'addedBy']) &&
+             d.email is string &&
+             d.email.size() > 0 && d.email.size() <= 254 &&
+             d.displayName is string &&
+             d.displayName.size() > 0 && d.displayName.size() <= 100 &&
+             d.role is string && d.role in validRoles &&
+             d.addedAt is timestamp &&
+             d.addedBy is string &&
+             d.addedBy.size() > 0 && d.addedBy.size() <= 128;
+    }
+
+    // Immutable fields must not change after creation
+    function adminImmutableFieldsUnchanged() {
+      return request.resource.data.addedAt == resource.data.addedAt &&
+             request.resource.data.addedBy == resource.data.addedBy;
+    }
+
+    // A superAdmin cannot downgrade their own role (prevents lockout)
+    function notDowngradingOwnRole(tenantId, email) {
+      return !(request.auth.token.email == email &&
+               resource.data.role == 'superAdmin' &&
+               request.resource.data.role != 'superAdmin');
+    }
+
+
+    // ---------------------------------------------------------------
+    // tenants/{tenantId}/admins — allowlist + role management
+    // ---------------------------------------------------------------
+    match /tenants/{tenantId}/admins/{email} {
+
+      // Any admin can read their own doc (needed for AuthProvider getDoc).
+      // superAdmins can read any admin doc in their tenant.
+      allow read: if (isAuthenticated() && request.auth.token.email == email) ||
+                     isSuperAdmin(tenantId);
+
+      // Only superAdmins can add new admins — prevents self-elevation.
+      // The addedBy field must be signed by the requesting superAdmin.
+      allow create: if isSuperAdmin(tenantId) &&
+                       isValidAdminDoc() &&
+                       request.resource.data.addedBy == request.auth.token.email;
+
+      // Only superAdmins can update admin records.
+      // Immutable fields (addedAt, addedBy) cannot be changed.
+      // A superAdmin cannot downgrade their own role.
+      allow update: if isSuperAdmin(tenantId) &&
+                       isValidAdminDoc() &&
+                       adminImmutableFieldsUnchanged() &&
+                       notDowngradingOwnRole(tenantId, email);
+
+      // Only superAdmins can revoke access.
+      // A superAdmin cannot delete their own doc (prevents full lockout).
+      allow delete: if isSuperAdmin(tenantId) && request.auth.token.email != email;
+    }
+
+    // ---------------------------------------------------------------
+    // tenants/{tenantId}/members — church member PII
+    // ---------------------------------------------------------------
+    // superAdmin, admin, editor → read
+    // superAdmin, admin         → write
+    // ---------------------------------------------------------------
+    match /tenants/{tenantId}/members/{memberId} {
+      allow read: if canReadMembers(tenantId);
+      allow write: if canWriteMembers(tenantId);
+    }
+
+
+    // ---------------------------------------------------------------
+    // public_finance_dashboard — intentionally public read-only
+    // ---------------------------------------------------------------
+    // Displayed on the unauthenticated /finance page.
+    // Writes restricted to superAdmin or admin only.
+    // ---------------------------------------------------------------
+    match /public_finance_dashboard/{docId} {
+      allow read: if true;
+      allow write: if isAuthenticated() &&
+                      (hasRole('san-francisco', 'superAdmin') ||
+                       hasRole('san-francisco', 'admin'));
+    }
+
+    // ---------------------------------------------------------------
+    // Default deny — block everything not explicitly covered above
+    // ---------------------------------------------------------------
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
