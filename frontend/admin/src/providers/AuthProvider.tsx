@@ -7,7 +7,7 @@ import {
 } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router";
+import { useParams } from "react-router";
 import { AuthContext } from "../context/AuthContext";
 import { auth, db, googleProvider } from "../lib";
 
@@ -20,7 +20,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [role, setRole] = useState<AdminRole | null>(null);
 
   const { tenantId } = useParams();
-  const navigate = useNavigate();
 
   useEffect(() => {
     // If there is no tenantId (e.g. invalid route), we shouldn't attempt to authenticate
@@ -47,8 +46,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           setUser(currentUser);
           setIsAuthorized(true);
           setRole(adminData.role);
-          // Redirect authorized admin to tenant home
-          navigate(`/${tenantId}`, { replace: true });
         } else {
           // Not on the allowlist — keep user but mark as unauthorized
           setUser(currentUser);
@@ -63,7 +60,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setLoading(false);
     });
     return () => unsubscribe();
-  }, [tenantId, navigate]);
+  }, [tenantId]);
 
   const login = async () => {
     await signInWithPopup(auth, googleProvider);

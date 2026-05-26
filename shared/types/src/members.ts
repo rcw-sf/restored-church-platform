@@ -11,6 +11,22 @@ export type Region =
 
 export type SuperRegion = "Peninsula" | "South Bay" | "East Bay" | "";
 
+export type Ministry = "Teens" | "Marrieds" | "Campus" | "Singles" | "";
+
+export type AdditionType =
+  | "Place Membership"
+  | "Baptism"
+  | "Restoration"
+  | "Other"
+  | "";
+export type TakeawayType =
+  | "Fallaway"
+  | "Transfer"
+  | "Glory"
+  | "Walkaway"
+  | "Other"
+  | "";
+
 export interface MemberDoc {
   individualId: string;
   firstName: string;
@@ -18,24 +34,24 @@ export interface MemberDoc {
   gender?: string;
   region?: Region;
   superRegion?: SuperRegion;
-  ministry?: string;
+  ministry?: Ministry;
   pledge?: number;
   phone?: string;
   email?: string;
   birthdate?: string;
   baptizedDate?: string;
-  type?: string;
+  type?: AdditionType;
   membershipStartDate?: string;
   membershipStopDate?: string;
   reasonForFallaway?: string;
   movedTo?: string;
   familyId?: string;
   familyPosition?: string;
-  takeawayType?: string;
+  takeawayType?: TakeawayType;
   familyMembers?: FamilyMemberDoc[];
   pushpayCommunityMemberKey?: string;
   pushpaySpouseCommunityMemberKey?: string; // Used for spouse giving logic
-  updatedAt?: FirebaseFirestore.FieldValue;
+  updatedAt?: string;
   createdAt?: string;
   modifiedAt?: string;
   tenantId?: string;
@@ -45,19 +61,4 @@ export interface FamilyMemberDoc {
   individualId?: string;
   fullName?: string;
   familyPosition?: string;
-}
-
-export interface RegionStats {
-  count: number;
-  totalPledge: number;
-}
-
-export interface MemberStatisticsDoc {
-  totalPledge: number;
-  memberCount: number;
-  membersWithPledge: number;
-  averagePledge: number;
-  regionBreakdown: Record<Region, RegionStats>;
-  calculatedAt: FirebaseFirestore.Timestamp;
-  tenantId?: string;
 }

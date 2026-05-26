@@ -1,6 +1,7 @@
 import { useAuth } from "@/hooks";
 import { render, screen, fireEvent } from "@testing-library/react";
 import type { User } from "firebase/auth";
+import { MemoryRouter } from "react-router";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { Header } from "../Header";
 
@@ -24,9 +25,11 @@ describe("Header Component", () => {
     });
 
     render(
-      <Header>
-        <div data-testid="child-content">Child Content</div>
-      </Header>,
+      <MemoryRouter>
+        <Header>
+          <div data-testid="child-content">Child Content</div>
+        </Header>
+      </MemoryRouter>,
     );
 
     expect(screen.getByTestId("child-content")).toBeInTheDocument();
@@ -45,9 +48,11 @@ describe("Header Component", () => {
     });
 
     render(
-      <Header>
-        <div>Content</div>
-      </Header>,
+      <MemoryRouter>
+        <Header>
+          <div>Content</div>
+        </Header>
+      </MemoryRouter>,
     );
 
     expect(screen.getByText("Admin Portal")).toBeInTheDocument();
@@ -67,9 +72,11 @@ describe("Header Component", () => {
     });
 
     render(
-      <Header>
-        <div>Content</div>
-      </Header>,
+      <MemoryRouter>
+        <Header>
+          <div>Content</div>
+        </Header>
+      </MemoryRouter>,
     );
     fireEvent.click(screen.getByText("Logout"));
     expect(mockLogout).toHaveBeenCalledTimes(1);

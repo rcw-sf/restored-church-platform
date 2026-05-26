@@ -29,7 +29,6 @@ vi.mock("react-router", async (importActual) => {
   const actual = await importActual<typeof import("react-router")>();
   return {
     ...actual,
-    useNavigate: () => vi.fn(),
     useParams: () => ({ tenantId: "test-tenant" }),
   };
 });
