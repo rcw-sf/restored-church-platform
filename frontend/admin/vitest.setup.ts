@@ -18,7 +18,7 @@ class ResizeObserver {
   disconnect() {}
 }
 
-global.ResizeObserver = ResizeObserver;
+globalThis.ResizeObserver = ResizeObserver;
 
 // Global Firebase mock to prevent "invalid-api-key" errors during tests
 vi.mock("firebase/app", () => ({
@@ -34,6 +34,7 @@ vi.mock("firebase/auth", () => ({
   signOut: vi.fn(),
   GoogleAuthProvider: vi.fn(),
   getAuth: vi.fn(),
+  connectAuthEmulator: vi.fn(),
 }));
 
 // Mock firebase/firestore functions
@@ -43,4 +44,5 @@ vi.mock("firebase/firestore", () => ({
   collection: vi.fn(),
   getDocs: vi.fn(),
   getFirestore: vi.fn(),
+  connectFirestoreEmulator: vi.fn(),
 }));

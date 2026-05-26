@@ -1,0 +1,68 @@
+{
+  "kind": "identitytoolkit#DownloadAccountResponse",
+  "users": [
+    {
+      "localId": "seed-admin-uid",
+      "lastLoginAt": "1779773548703",
+      "displayName": "Regular Admin",
+      "emailVerified": true,
+      "email": "admin-regular@restoredsf.org",
+      "salt": "fakeSaltUZqLdJWWfo1jO7bGNDhV",
+      "passwordHash": "fakeHash:salt=fakeSaltUZqLdJWWfo1jO7bGNDhV:password=password123",
+      "passwordUpdatedAt": 1779773548703,
+      "validSince": "1779773548",
+      "createdAt": "1779773548703",
+      "providerUserInfo": [
+        {
+          "providerId": "google.com",
+          "email": "admin-regular@restoredsf.org",
+          "federatedId": "admin-regular@restoredsf.org",
+          "rawId": "admin-regular@restoredsf.org",
+          "displayName": "Regular Admin"
+        }
+      ]
+    },
+    {
+      "localId": "seed-editor-uid",
+      "lastLoginAt": "1779773548710",
+      "displayName": "Editor User",
+      "emailVerified": true,
+      "email": "editor@restoredsf.org",
+      "salt": "fakeSaltavIoOf439sNnaLXfAgX2",
+      "passwordHash": "fakeHash:salt=fakeSaltavIoOf439sNnaLXfAgX2:password=password123",
+      "passwordUpdatedAt": 1779773548710,
+      "validSince": "1779773548",
+      "createdAt": "1779773548710",
+      "providerUserInfo": [
+        {
+          "providerId": "google.com",
+          "email": "editor@restoredsf.org",
+          "federatedId": "editor@restoredsf.org",
+          "rawId": "editor@restoredsf.org",
+          "displayName": "Editor User"
+        }
+      ]
+    },
+    {
+      "localId": "seed-super-admin-uid",
+      "lastLoginAt": "1779773548208",
+      "displayName": "Super Admin",
+      "emailVerified": true,
+      "email": "admin@restoredsf.org",
+      "salt": "fakeSalt6vjChdv8uODXQ8jv0Hq1",
+      "passwordHash": "fakeHash:salt=fakeSalt6vjChdv8uODXQ8jv0Hq1:password=password123",
+      "passwordUpdatedAt": 1779773548208,
+      "validSince": "1779773548",
+      "createdAt": "1779773548208",
+      "providerUserInfo": [
+        {
+          "providerId": "google.com",
+          "email": "admin@restoredsf.org",
+          "federatedId": "admin@restoredsf.org",
+          "rawId": "admin@restoredsf.org",
+          "displayName": "Super Admin"
+        }
+      ]
+    }
+  ]
+}

@@ -6,7 +6,9 @@
   "scripts": {
     "main": "pnpm --filter main dev",
     "deposit-counter": "pnpm --filter deposit-counter dev",
-    "admin": "pnpm --filter admin dev",
+    "emulator": "firebase emulators:start --import=./emulator-data",
+    "admin": "firebase emulators:exec --ui --import=./emulator-data 'pnpm --filter admin dev'",
+    "admin:prd": "pnpm --filter admin prd",
     "pushpay-sync:members": "pnpm --filter pushpay-sync sync-members",
     "pushpay-sync:giving": "pnpm --filter pushpay-sync sync-giving",
     "pushpay-sync:calculate-summaries": "pnpm --filter pushpay-sync calculate-summaries",
