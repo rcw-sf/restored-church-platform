@@ -56,9 +56,23 @@ This repository is organized into frontend applications and backend services:
 
 You can start the development servers for specific applications directly from the root using these commands:
 
-- **Admin Portal**: `pnpm admin`
+- **Admin Portal (Local Emulator Mode)**: `pnpm admin` (Starts the local Firebase Emulator Suite and launches the Vite dev server concurrently, then handles clean shutdown on exit)
+- **Admin Portal (Production Mode)**: `pnpm admin:prd` (Starts the Vite dev server pointed directly to your production Firebase project)
 - **Deposit Counter**: `pnpm deposit-counter`
 - **Main App**: `pnpm main`
+
+#### Firebase Emulator Suite
+
+A local Firebase Emulator Suite is configured for offline development, local rules testing, and database isolation.
+
+- **Pre-seeded Data**: The repository commits development seed data in the `./emulator-data` directory (which **should be committed to Git** to keep local dev states in sync).
+  - **Super Admin**: `admin@restoredsf.org`
+  - **Regular Admin**: `admin-regular@restoredsf.org`
+  - **Editor**: `editor@restoredsf.org`
+  - Includes mock member records under `tenants/san-francisco/members` and a public finance dashboard document.
+- **Testing Auth/Sign In locally**: Click **"Sign in with Google"** on the login page, then select one of the pre-seeded accounts from the list in the mock Google Auth popup window.
+- **Start Emulators manually**: Run `pnpm emulator` (or `npx firebase emulators:start --import=./emulator-data`) from the root.
+- **Emulator UI Dashboard**: Accessible at `http://localhost:4000` once started.
 
 #### Root-level Commands
 

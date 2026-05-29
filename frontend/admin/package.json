@@ -4,7 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "VITE_USE_FIREBASE_EMULATORS=true vite",
+    "prd": "VITE_USE_FIREBASE_EMULATORS=false vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
