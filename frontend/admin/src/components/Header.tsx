@@ -37,7 +37,7 @@ export function Header({ children }: HeaderProps) {
         </nav>
         {/* Page Content */}
         <main className="w-full flex justify-center">
-          <div className="w-full max-w-7xl px-4">{children}</div>
+          <div className="w-full max-w-7xl px-4 pb-20">{children}</div>
         </main>
       </div>
       {/* Sidebar */}
@@ -47,7 +47,7 @@ export function Header({ children }: HeaderProps) {
           aria-label="close sidebar"
           className="drawer-overlay"
         ></label>
-        <div className="menu p-4 w-full md:w-80 min-h-screen bg-base-100 text-base-content flex flex-col">
+        <div className="menu p-4 pb-20 w-full md:w-80 min-h-screen bg-base-100 text-base-content flex flex-col">
           {/* Close button */}
           <button
             onClick={closeDrawer}
