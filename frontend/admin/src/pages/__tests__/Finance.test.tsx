@@ -32,7 +32,10 @@ describe("Finance Component", () => {
         benevolence: 500,
       },
       expenses: [{ category: "Rent", amount: 2000 }],
-      centralAdmin: { budget: 10000, breakdown: [] },
+      centralAdmin: {
+        budget: 10000,
+        breakdown: [{ category: "Staff", percent: 50 }],
+      },
     });
 
     render(<Finance />);
