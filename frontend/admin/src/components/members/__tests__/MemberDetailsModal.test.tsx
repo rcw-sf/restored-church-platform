@@ -226,4 +226,27 @@ describe("MemberDetailsModal", () => {
     fireEvent.click(closeBtn);
     expect(mockOnClose).toHaveBeenCalledTimes(2);
   });
+
+  it("renders Edit Member button and calls onEdit when clicked", () => {
+    const basicMember: MemberDoc = {
+      individualId: "M123",
+      firstName: "John",
+      lastName: "Doe",
+    };
+    const mockOnEdit = vi.fn();
+
+    render(
+      <MemberDetailsModal
+        member={basicMember}
+        onClose={mockOnClose}
+        onEdit={mockOnEdit}
+      />,
+    );
+
+    const editBtn = screen.getByTestId("details-edit-button");
+    expect(editBtn).toBeInTheDocument();
+
+    fireEvent.click(editBtn);
+    expect(mockOnEdit).toHaveBeenCalledWith(basicMember);
+  });
 });
