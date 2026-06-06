@@ -9,7 +9,7 @@
     "calculate-summaries": "tsx src/run-calculate-summaries.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run src/",
-    "test:integration": "cd ../../ && npx firebase emulators:exec --only firestore,auth --project demo-test 'cd backend/pushpay-sync && vitest run -c vitest.integration.config.ts'",
+    "test:integration": "firebase emulators:exec --project demo-test --only firestore,auth --config ../../firebase.json 'vitest run -c vitest.integration.config.ts'",
     "test:watch": "vitest --watch",
     "test:coverage": "vitest run src/ --coverage"
   },
