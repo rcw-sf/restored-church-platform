@@ -39,6 +39,8 @@ const TestConsumer = () => {
   const context = useContext(AuthContext);
   if (!context) return <div>No Context</div>;
 
+  if (!context.isAuthorized && !context.loading) return <div>Unauthorized</div>;
+
   return (
     <div>
       <div data-testid="user">{context.user?.email || "no-user"}</div>
@@ -130,5 +132,41 @@ describe("AuthProvider", () => {
     });
 
     expect(signOut).toHaveBeenCalled();
+  });
+
+  it("shows unauthorized message when user is not authorized", async () => {
+    let authStateCallback: (user: User | null) => void = () => {};
+
+    vi.mocked(onAuthStateChanged).mockImplementation((_auth, callback) => {
+      authStateCallback = callback as (user: User | null) => void;
+      return vi.fn(); // unsubscribe mock
+    });
+
+    render(
+      <MemoryRouter>
+        <AuthProvider>
+          <TestConsumer />
+        </AuthProvider>
+      </MemoryRouter>,
+    );
+
+    // Initial state: loading should be true, user should be null
+    expect(screen.getByTestId("loading")).toHaveTextContent("loading");
+    expect(screen.getByTestId("user")).toHaveTextContent("no-user");
+
+    // Mock getDoc to simulate an unauthorized user (not on the allowlist)
+    vi.mocked(getDoc).mockResolvedValueOnce({
+      exists: () => false,
+    } as Awaited<ReturnType<typeof getDoc>>);
+
+    // Simulate auth state change (user logs in)
+    await act(async () => {
+      authStateCallback({
+        email: "unauthorized@restoredchurch.com",
+        uid: "123",
+      } as User);
+    });
+
+    expect(screen.getByText("Unauthorized")).toBeInTheDocument();
   });
 });
