@@ -3,15 +3,12 @@
   "users": [
     {
       "localId": "seed-admin-uid",
+      "createdAt": "1779773548703",
       "lastLoginAt": "1779773548703",
       "displayName": "Regular Admin",
-      "emailVerified": true,
-      "email": "admin-regular@restoredsf.org",
-      "salt": "fakeSaltUZqLdJWWfo1jO7bGNDhV",
       "passwordHash": "fakeHash:salt=fakeSaltUZqLdJWWfo1jO7bGNDhV:password=password123",
-      "passwordUpdatedAt": 1779773548703,
-      "validSince": "1779773548",
-      "createdAt": "1779773548703",
+      "salt": "fakeSaltUZqLdJWWfo1jO7bGNDhV",
+      "passwordUpdatedAt": 1780272171605,
       "providerUserInfo": [
         {
           "providerId": "google.com",
@@ -19,41 +16,58 @@
           "federatedId": "admin-regular@restoredsf.org",
           "rawId": "admin-regular@restoredsf.org",
           "displayName": "Regular Admin"
+        },
+        {
+          "providerId": "password",
+          "email": "admin-regular@restoredsf.org",
+          "federatedId": "admin-regular@restoredsf.org",
+          "rawId": "admin-regular@restoredsf.org",
+          "displayName": "Regular Admin"
         }
-      ]
+      ],
+      "validSince": "1780272171",
+      "email": "admin-regular@restoredsf.org",
+      "emailVerified": true,
+      "disabled": false
     },
     {
       "localId": "seed-editor-uid",
-      "lastLoginAt": "1779773548710",
-      "displayName": "Editor User",
-      "emailVerified": true,
-      "email": "editor@restoredsf.org",
-      "salt": "fakeSaltavIoOf439sNnaLXfAgX2",
-      "passwordHash": "fakeHash:salt=fakeSaltavIoOf439sNnaLXfAgX2:password=password123",
-      "passwordUpdatedAt": 1779773548710,
-      "validSince": "1779773548",
       "createdAt": "1779773548710",
+      "lastLoginAt": "1780272177853",
+      "displayName": "Editor User",
+      "passwordHash": "fakeHash:salt=fakeSaltavIoOf439sNnaLXfAgX2:password=password123",
+      "salt": "fakeSaltavIoOf439sNnaLXfAgX2",
+      "passwordUpdatedAt": 1780272171605,
       "providerUserInfo": [
         {
           "providerId": "google.com",
+          "rawId": "editor@restoredsf.org",
+          "federatedId": "editor@restoredsf.org",
+          "displayName": "Editor User",
+          "email": "editor@restoredsf.org"
+        },
+        {
+          "providerId": "password",
           "email": "editor@restoredsf.org",
           "federatedId": "editor@restoredsf.org",
           "rawId": "editor@restoredsf.org",
           "displayName": "Editor User"
         }
-      ]
+      ],
+      "validSince": "1780272171",
+      "email": "editor@restoredsf.org",
+      "emailVerified": true,
+      "disabled": false,
+      "lastRefreshAt": "2026-06-01T00:02:57.853Z"
     },
     {
       "localId": "seed-super-admin-uid",
+      "createdAt": "1779773548208",
       "lastLoginAt": "1779773548208",
       "displayName": "Super Admin",
-      "emailVerified": true,
-      "email": "admin@restoredsf.org",
-      "salt": "fakeSalt6vjChdv8uODXQ8jv0Hq1",
       "passwordHash": "fakeHash:salt=fakeSalt6vjChdv8uODXQ8jv0Hq1:password=password123",
-      "passwordUpdatedAt": 1779773548208,
-      "validSince": "1779773548",
-      "createdAt": "1779773548208",
+      "salt": "fakeSalt6vjChdv8uODXQ8jv0Hq1",
+      "passwordUpdatedAt": 1780272171605,
       "providerUserInfo": [
         {
           "providerId": "google.com",
@@ -61,8 +75,19 @@
           "federatedId": "admin@restoredsf.org",
           "rawId": "admin@restoredsf.org",
           "displayName": "Super Admin"
+        },
+        {
+          "providerId": "password",
+          "email": "admin@restoredsf.org",
+          "federatedId": "admin@restoredsf.org",
+          "rawId": "admin@restoredsf.org",
+          "displayName": "Super Admin"
         }
-      ]
+      ],
+      "validSince": "1780272171",
+      "email": "admin@restoredsf.org",
+      "emailVerified": true,
+      "disabled": false
     }
   ]
 }
