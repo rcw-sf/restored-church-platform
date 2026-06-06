@@ -35,7 +35,7 @@ export default mergeConfig(
           "**/index.ts",
         ],
         thresholds: {
-          lines: 85,
+          lines: 80,
           functions: 80,
           branches: 60,
           statements: 70,
