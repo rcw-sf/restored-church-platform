@@ -8,8 +8,11 @@ export function useMembers() {
   const [members, setMembers] = useState<MemberDoc[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const { tenantId } = useParams();
+
+  const refetch = () => setRefreshTrigger((prev) => prev + 1);
 
   useEffect(() => {
     const fetchMembers = async () => {
@@ -47,7 +50,7 @@ export function useMembers() {
     };
 
     void fetchMembers();
-  }, [tenantId]);
+  }, [tenantId, refreshTrigger]);
 
-  return { members, loading, error };
+  return { members, loading, error, refetch };
 }
