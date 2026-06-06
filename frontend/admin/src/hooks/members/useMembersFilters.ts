@@ -1,7 +1,18 @@
-import type { MemberDoc, Ministry, Region, SuperRegion } from "@repo/types";
+import type { Ministry, Region, SuperRegion } from "@repo/types";
 import { useState } from "react";
 
-export const useMembersFilters = (members: MemberDoc[]) => {
+export interface FilterableMember {
+  firstName: string;
+  lastName: string;
+  email?: string;
+  phone?: string;
+  region?: Region;
+  superRegion?: SuperRegion;
+  ministry?: Ministry;
+  pledge?: number;
+}
+
+export const useMembersFilters = <T extends FilterableMember>(members: T[]) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [regionFilter, setRegionFilter] = useState("");
   const [superRegionFilter, setSuperRegionFilter] = useState("");

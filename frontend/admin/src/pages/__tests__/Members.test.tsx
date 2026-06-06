@@ -73,6 +73,7 @@ describe("Members Component", () => {
       loading: true,
       error: null,
       members: [],
+      refetch: vi.fn(),
     });
 
     vi.mocked(useMembersFilters).mockReturnValue({
@@ -105,6 +106,7 @@ describe("Members Component", () => {
       loading: false,
       error: "Failed to load members",
       members: [],
+      refetch: vi.fn(),
     });
 
     vi.mocked(useMembersFilters).mockReturnValue({
@@ -136,6 +138,7 @@ describe("Members Component", () => {
       loading: false,
       error: null,
       members: mockMembers,
+      refetch: vi.fn(),
     });
 
     vi.mocked(useMembersFilters).mockReturnValue({
@@ -176,6 +179,7 @@ describe("Members Component", () => {
       loading: false,
       error: null,
       members: mockMembers,
+      refetch: vi.fn(),
     });
 
     vi.mocked(useMembersFilters).mockReturnValue({
@@ -223,6 +227,7 @@ describe("Members Component", () => {
       loading: false,
       error: null,
       members: mockMembers,
+      refetch: vi.fn(),
     });
 
     vi.mocked(useMembersFilters).mockReturnValue({
@@ -280,6 +285,7 @@ describe("Members Component", () => {
       loading: false,
       error: null,
       members: mockMembers,
+      refetch: vi.fn(),
     });
     vi.mocked(useMembersFilters).mockReturnValue({
       totalCount: 12,
