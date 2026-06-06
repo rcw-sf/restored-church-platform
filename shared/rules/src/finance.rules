@@ -1,0 +1,17 @@
+    // ---------------------------------------------------------------
+    // public_finance_dashboard — intentionally public read-only
+    // ---------------------------------------------------------------
+    // Displayed on the unauthenticated /finance page.
+    // Writes restricted to superAdmin or admin only.
+    // ---------------------------------------------------------------
+    match /public_finance_dashboard/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // ---------------------------------------------------------------
+    // Default deny — block everything not explicitly covered above
+    // ---------------------------------------------------------------
+    match /{document=**} {
+      allow read, write: if false;
+    }

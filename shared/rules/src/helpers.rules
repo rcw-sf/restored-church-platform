@@ -1,0 +1,65 @@
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: tenants/{tenantId}/admins
+    // Document ID: {email}  (Admin's email address)
+    // Fields:
+    //   - email:       string (required) — the admin's Google email
+    //   - displayName: string (required) — human-readable name
+    //   - role:        string (required) — one of: superAdmin | admin | editor
+    //   - addedAt:     timestamp (required) — when access was granted
+    //   - addedBy:     string (required) — UID of the admin who added them
+    //
+    // Collection: tenants/{tenantId}/members
+    // Document ID: auto-generated
+    // Fields: PII — full access restricted to admins/superAdmins. editors can read.
+    //
+
+    // Collection: public_finance_dashboard
+    // Document ID: "current"
+    // Fields: public financial summary — intentionally world-readable
+    //
+    // ===============================================================
+
+    // ---------------------------------------------------------------
+    // Helper Functions
+    // ---------------------------------------------------------------
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Fetch this user's admin doc for a given tenant
+    function getAdminDoc(tenantId) {
+      return get(/databases/$(database)/documents/tenants/$(tenantId)/admins/$(request.auth.token.email.lower()));
+    }
+
+    // Does an admin doc exist for this user in the given tenant?
+    function isAdmin(tenantId) {
+      return isAuthenticated() &&
+             request.auth.token.email_verified == true &&
+             exists(/databases/$(database)/documents/tenants/$(tenantId)/admins/$(request.auth.token.email.lower()));
+    }
+
+    // Does the user have a specific role?
+    function hasRole(tenantId, role) {
+      return isAdmin(tenantId) && getAdminDoc(tenantId).data.role == role;
+    }
+
+    // Can the user manage other admins? (superAdmin only)
+    function isSuperAdmin(tenantId) {
+      return hasRole(tenantId, 'superAdmin');
+    }
+
+    // Can the user read member data? (superAdmin, admin, editor)
+    function canReadMembers(tenantId) {
+      return isAdmin(tenantId) &&
+             getAdminDoc(tenantId).data.role in ['superAdmin', 'admin', 'editor'];
+    }
+
+    // Can the user write member data directly? (superAdmin, admin)
+    function canWriteMembers(tenantId) {
+      return isAdmin(tenantId) &&
+             getAdminDoc(tenantId).data.role in ['superAdmin', 'admin'];
+    }

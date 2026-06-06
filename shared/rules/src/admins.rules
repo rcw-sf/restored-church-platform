@@ -1,0 +1,57 @@
+    // Validate the shape of an admin document on create/update
+    function isValidAdminDoc() {
+      let d = request.resource.data;
+      let validRoles = ['superAdmin', 'admin', 'editor'];
+      return d.keys().hasOnly(['email', 'displayName', 'role', 'addedAt', 'addedBy']) &&
+             d.keys().hasAll(['email', 'displayName', 'role', 'addedAt', 'addedBy']) &&
+             d.email is string &&
+             d.email.size() > 0 && d.email.size() <= 254 &&
+             d.displayName is string &&
+             d.displayName.size() > 0 && d.displayName.size() <= 100 &&
+             d.role is string && d.role in validRoles &&
+             d.addedAt is timestamp &&
+             d.addedBy is string &&
+             d.addedBy.size() > 0 && d.addedBy.size() <= 128;
+    }
+
+    // Immutable fields must not change after creation
+    function adminImmutableFieldsUnchanged() {
+      return request.resource.data.addedAt == resource.data.addedAt &&
+             request.resource.data.addedBy == resource.data.addedBy;
+    }
+
+    // A superAdmin cannot downgrade their own role (prevents lockout)
+    function notDowngradingOwnRole(tenantId, email) {
+      return !(request.auth.token.email.lower() == email.lower() &&
+               resource.data.role == 'superAdmin' &&
+               request.resource.data.role != 'superAdmin');
+    }
+
+    // ---------------------------------------------------------------
+    // tenants/{tenantId}/admins — allowlist + role management
+    // ---------------------------------------------------------------
+    match /tenants/{tenantId}/admins/{email} {
+
+      // Any admin can read their own doc (needed for AuthProvider getDoc).
+      // superAdmins can read any admin doc in their tenant.
+      allow read: if (isAuthenticated() && request.auth.token.email.lower() == email.lower()) ||
+                     isSuperAdmin(tenantId);
+
+      // Only superAdmins can add new admins — prevents self-elevation.
+      // The addedBy field must be signed by the requesting superAdmin.
+      allow create: if isSuperAdmin(tenantId) &&
+                       isValidAdminDoc() &&
+                       request.resource.data.addedBy.lower() == request.auth.token.email.lower();
+
+      // Only superAdmins can update admin records.
+      // Immutable fields (addedAt, addedBy) cannot be changed.
+      // A superAdmin cannot downgrade their own role.
+      allow update: if isSuperAdmin(tenantId) &&
+                       isValidAdminDoc() &&
+                       adminImmutableFieldsUnchanged() &&
+                       notDowngradingOwnRole(tenantId, email);
+
+      // Only superAdmins can revoke access.
+      // A superAdmin cannot delete their own doc (prevents full lockout).
+      allow delete: if isSuperAdmin(tenantId) && request.auth.token.email.lower() != email.lower();
+    }

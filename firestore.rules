@@ -1,8 +1,7 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // ===============================================================
+        // ===============================================================
     // Assumed Data Model
     // ===============================================================
     //
@@ -36,14 +35,14 @@ service cloud.firestore {
 
     // Fetch this user's admin doc for a given tenant
     function getAdminDoc(tenantId) {
-      return get(/databases/$(database)/documents/tenants/$(tenantId)/admins/$(request.auth.token.email));
+      return get(/databases/$(database)/documents/tenants/$(tenantId)/admins/$(request.auth.token.email.lower()));
     }
 
     // Does an admin doc exist for this user in the given tenant?
     function isAdmin(tenantId) {
       return isAuthenticated() &&
              request.auth.token.email_verified == true &&
-             exists(/databases/$(database)/documents/tenants/$(tenantId)/admins/$(request.auth.token.email));
+             exists(/databases/$(database)/documents/tenants/$(tenantId)/admins/$(request.auth.token.email.lower()));
     }
 
     // Does the user have a specific role?
@@ -92,11 +91,10 @@ service cloud.firestore {
 
     // A superAdmin cannot downgrade their own role (prevents lockout)
     function notDowngradingOwnRole(tenantId, email) {
-      return !(request.auth.token.email == email &&
+      return !(request.auth.token.email.lower() == email.lower() &&
                resource.data.role == 'superAdmin' &&
                request.resource.data.role != 'superAdmin');
     }
-
 
     // ---------------------------------------------------------------
     // tenants/{tenantId}/admins — allowlist + role management
@@ -105,14 +103,14 @@ service cloud.firestore {
 
       // Any admin can read their own doc (needed for AuthProvider getDoc).
       // superAdmins can read any admin doc in their tenant.
-      allow read: if (isAuthenticated() && request.auth.token.email == email) ||
+      allow read: if (isAuthenticated() && request.auth.token.email.lower() == email.lower()) ||
                      isSuperAdmin(tenantId);
 
       // Only superAdmins can add new admins — prevents self-elevation.
       // The addedBy field must be signed by the requesting superAdmin.
       allow create: if isSuperAdmin(tenantId) &&
                        isValidAdminDoc() &&
-                       request.resource.data.addedBy == request.auth.token.email;
+                       request.resource.data.addedBy.lower() == request.auth.token.email.lower();
 
       // Only superAdmins can update admin records.
       // Immutable fields (addedAt, addedBy) cannot be changed.
@@ -124,7 +122,58 @@ service cloud.firestore {
 
       // Only superAdmins can revoke access.
       // A superAdmin cannot delete their own doc (prevents full lockout).
-      allow delete: if isSuperAdmin(tenantId) && request.auth.token.email != email;
+      allow delete: if isSuperAdmin(tenantId) && request.auth.token.email.lower() != email.lower();
+    }
+
+    // Validate the shape of a pending member document on create
+    function isValidPendingMemberDoc(tenantId) {
+      let d = request.resource.data;
+      let allowedKeys = [
+        'firstName', 'lastName', 'email', 'phone', 'gender', 'birthdate', 
+        'baptizedDate', 'type', 'pledge', 'region', 'superRegion', 'ministry', 
+        'membershipStartDate', 'requestType', 'status', 'createdAt', 'updatedAt', 
+        'createdBy', 'targetMemberId', 'tenantId'
+      ];
+      let requiredKeys = ['firstName', 'lastName', 'status', 'requestType', 'createdAt', 'createdBy'];
+      
+      return d.keys().hasOnly(allowedKeys) &&
+             d.keys().hasAll(requiredKeys) &&
+             d.firstName is string && d.firstName.size() > 0 && d.firstName.size() <= 50 &&
+             d.lastName is string && d.lastName.size() > 0 && d.lastName.size() <= 50 &&
+             d.status == 'pending' &&
+             d.requestType in ['create', 'update', 'remove'] &&
+             d.createdAt is string && d.createdAt.size() > 0 && d.createdAt.size() <= 30 &&
+             d.createdBy is string && d.createdBy.lower() == request.auth.token.email.lower() &&
+             
+             // Optional field validations (if they exist)
+             (!('tenantId' in d) || (d.tenantId == tenantId)) &&
+             (!('gender' in d) || (d.gender is string && d.gender.size() <= 10)) &&
+             (!('region' in d) || (d.region is string && d.region.size() <= 50)) &&
+             (!('superRegion' in d) || (d.superRegion is string && d.superRegion.size() <= 50)) &&
+             (!('ministry' in d) || (d.ministry is string && d.ministry.size() <= 50)) &&
+             (!('pledge' in d) || (d.pledge is number)) &&
+             (!('phone' in d) || (d.phone is string && d.phone.size() <= 25)) &&
+             (!('email' in d) || (d.email is string && d.email.size() <= 254)) &&
+             (!('birthdate' in d) || (d.birthdate is string && d.birthdate.size() <= 15)) &&
+             (!('baptizedDate' in d) || (d.baptizedDate is string && d.baptizedDate.size() <= 15)) &&
+             (!('type' in d) || (d.type is string && d.type.size() <= 50)) &&
+             (!('membershipStartDate' in d) || (d.membershipStartDate is string && d.membershipStartDate.size() <= 15)) &&
+             (!('membershipStopDate' in d) || (d.membershipStopDate is string && d.membershipStopDate.size() <= 15)) &&
+             (!('updatedAt' in d) || (d.updatedAt is string && d.updatedAt.size() <= 30)) &&
+             (!('targetMemberId' in d) || (d.targetMemberId is string && d.targetMemberId.size() <= 128));
+    }
+
+    // Checks if an editor is authorized to update their own pending request
+    function canEditorUpdatePendingDoc(tenantId) {
+      return canReadMembers(tenantId) &&
+             resource.data.createdBy.lower() == request.auth.token.email.lower() &&
+             resource.data.status == 'pending' &&
+             request.resource.data.status == 'pending' &&
+             request.resource.data.createdBy.lower() == resource.data.createdBy.lower() &&
+             request.resource.data.createdAt == resource.data.createdAt &&
+             request.resource.data.requestType == resource.data.requestType &&
+             (!('targetMemberId' in resource.data) || request.resource.data.targetMemberId == resource.data.targetMemberId) &&
+             isValidPendingMemberDoc(tenantId);
     }
 
     // ---------------------------------------------------------------
@@ -138,6 +187,19 @@ service cloud.firestore {
       allow write: if canWriteMembers(tenantId);
     }
 
+    // tenants/{tenantId}/pending_members — member addition/edit requests
+    match /tenants/{tenantId}/pending_members/{memberId} {
+      allow read: if canReadMembers(tenantId);
+      allow create: if canReadMembers(tenantId) && isValidPendingMemberDoc(tenantId);
+      allow update: if canWriteMembers(tenantId) || canEditorUpdatePendingDoc(tenantId);
+      allow delete: if canWriteMembers(tenantId);
+    }
+
+    // tenants/{tenantId}/additions — history of member additions
+    match /tenants/{tenantId}/additions/{additionId} {
+      allow read: if canReadMembers(tenantId);
+      allow write: if canWriteMembers(tenantId);
+    }
 
     // ---------------------------------------------------------------
     // public_finance_dashboard — intentionally public read-only
@@ -147,9 +209,7 @@ service cloud.firestore {
     // ---------------------------------------------------------------
     match /public_finance_dashboard/{docId} {
       allow read: if true;
-      allow write: if isAuthenticated() &&
-                      (hasRole('san-francisco', 'superAdmin') ||
-                       hasRole('san-francisco', 'admin'));
+      allow write: if false;
     }
 
     // ---------------------------------------------------------------
@@ -158,5 +218,6 @@ service cloud.firestore {
     match /{document=**} {
       allow read, write: if false;
     }
+
   }
 }
