@@ -4,3 +4,4 @@ packages:
   - frontend/deposit-counter
   - backend/pushpay-sync
   - shared/types
+  - shared/rules

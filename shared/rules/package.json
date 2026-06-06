@@ -1,0 +1,21 @@
+{
+  "name": "@repo/rules",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsx scripts/build-rules.ts",
+    "typecheck": "tsc -b --noEmit",
+    "test": "pnpm build && vitest run"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "5.0.1",
+    "@types/node": "25.6.0",
+    "firebase": "12.12.0",
+    "typescript": "5.8.3",
+    "vitest": "4.1.4"
+  },
+  "dependencies": {
+    "tsx": "4.22.4"
+  }
+}

@@ -15,6 +15,10 @@ This repository is organized into frontend applications and backend services:
 
 - **[Pushpay Sync](./backend/pushpay-sync)**: A Node.js service that synchronizes member and giving data from the Pushpay ChMS API into Firebase Firestore. Includes scheduled workflows for weekly giving summaries and member statistics.
 
+### Shared Packages
+
+- **[Rules Package](./shared/rules)**: Contains modular Firestore rules slices, a compilation script (`build-rules.js`), and a dedicated unit testing suite.
+
 ## Technology Stack
 
 - **Package Manager**: [pnpm](https://pnpm.io/)
@@ -102,7 +106,8 @@ pnpm pushpay-sync:calculate-summaries
 
 The project includes comprehensive test suites for all applications:
 
-- **Run all tests**: `pnpm test`
+- **Run all tests**: `pnpm test` (Runs frontend, backend, and Firestore rules tests recursively)
+- **Rules unit tests**: `pnpm --filter @repo/rules test` (Runs security rules assertions locally)
 - **Watch mode (Admin)**: `pnpm test:admin:watch`
 - **Watch mode (Deposit Counter)**: `pnpm test:deposit-counter:watch`
 - **Coverage Report**: `pnpm test:coverage`
