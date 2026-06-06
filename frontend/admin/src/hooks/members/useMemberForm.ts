@@ -20,12 +20,15 @@ export interface MemberInputData {
   gender?: string;
   birthdate?: string;
   baptizedDate?: string;
+  membershipStartDate?: string;
   type?: AdditionType | "";
   pledge?: number;
   region?: Region | "";
   superRegion?: SuperRegion | "";
   ministry?: Ministry | "";
-  membershipStartDate?: string;
+  pushpayIndividualId?: string;
+  pushpayCommunityMemberKey?: string;
+  pushpaySpouseCommunityMemberKey?: string;
 }
 
 export interface SaveMemberOptions {
@@ -78,8 +81,13 @@ export function useMemberForm() {
             superRegion: data.superRegion || undefined,
             ministry: data.ministry || undefined,
             membershipStartDate: data.membershipStartDate || undefined,
-            createdAt: DateTime.now(),
-            updatedAt: DateTime.now(),
+            pushpayIndividualId: data.pushpayIndividualId || undefined,
+            pushpayCommunityMemberKey:
+              data.pushpayCommunityMemberKey || undefined,
+            pushpaySpouseCommunityMemberKey:
+              data.pushpaySpouseCommunityMemberKey || undefined,
+            createdAt: DateTime.now().toISO(),
+            updatedAt: DateTime.now().toISO(),
             tenantId,
           };
 
@@ -102,7 +110,7 @@ export function useMemberForm() {
             region: completeMemberData.region || "",
             superRegion: completeMemberData.superRegion || "",
             ministry: completeMemberData.ministry || "",
-            createdAt: DateTime.now(),
+            createdAt: DateTime.now().toISO(),
           };
 
           batch.set(newAdditionRef, additionLogData);
@@ -130,10 +138,15 @@ export function useMemberForm() {
             superRegion: data.superRegion || undefined,
             ministry: data.ministry || undefined,
             membershipStartDate: data.membershipStartDate || undefined,
+            pushpayIndividualId: data.pushpayIndividualId || undefined,
+            pushpayCommunityMemberKey:
+              data.pushpayCommunityMemberKey || undefined,
+            pushpaySpouseCommunityMemberKey:
+              data.pushpaySpouseCommunityMemberKey || undefined,
             requestType: "create",
             status: "pending",
-            createdAt: DateTime.now(),
-            updatedAt: DateTime.now(),
+            createdAt: DateTime.now().toISO(),
+            updatedAt: DateTime.now().toISO(),
             createdBy: userEmail,
             tenantId,
           };
@@ -166,7 +179,12 @@ export function useMemberForm() {
           superRegion: data.superRegion || undefined,
           ministry: data.ministry || undefined,
           membershipStartDate: data.membershipStartDate || undefined,
-          updatedAt: DateTime.now(),
+          pushpayIndividualId: data.pushpayIndividualId || undefined,
+          pushpayCommunityMemberKey:
+            data.pushpayCommunityMemberKey || undefined,
+          pushpaySpouseCommunityMemberKey:
+            data.pushpaySpouseCommunityMemberKey || undefined,
+          updatedAt: DateTime.now().toISO(),
         };
 
         await updateDoc(pendingRef, updateDocData);
@@ -192,7 +210,12 @@ export function useMemberForm() {
             superRegion: data.superRegion || undefined,
             ministry: data.ministry || undefined,
             membershipStartDate: data.membershipStartDate || undefined,
-            updatedAt: DateTime.now(),
+            pushpayIndividualId: data.pushpayIndividualId || undefined,
+            pushpayCommunityMemberKey:
+              data.pushpayCommunityMemberKey || undefined,
+            pushpaySpouseCommunityMemberKey:
+              data.pushpaySpouseCommunityMemberKey || undefined,
+            updatedAt: DateTime.now().toISO(),
           };
 
           await updateDoc(memberRef, updateDocData);
@@ -219,11 +242,16 @@ export function useMemberForm() {
             superRegion: data.superRegion || undefined,
             ministry: data.ministry || undefined,
             membershipStartDate: data.membershipStartDate || undefined,
+            pushpayIndividualId: data.pushpayIndividualId || undefined,
+            pushpayCommunityMemberKey:
+              data.pushpayCommunityMemberKey || undefined,
+            pushpaySpouseCommunityMemberKey:
+              data.pushpaySpouseCommunityMemberKey || undefined,
             requestType: "update",
             status: "pending",
             targetMemberId: memberId,
-            createdAt: DateTime.now(),
-            updatedAt: DateTime.now(),
+            createdAt: DateTime.now().toISO(),
+            updatedAt: DateTime.now().toISO(),
             createdBy: userEmail,
             tenantId,
           };
