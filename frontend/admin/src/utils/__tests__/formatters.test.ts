@@ -1,9 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  formatPhone,
-  getLocalIsoDate,
-  removeUndefinedFields,
-} from "../formatters";
+import { formatPhone, getLocalIsoDate } from "../formatters";
 
 describe("formatters utility", () => {
   describe("formatPhone", () => {
@@ -39,28 +35,6 @@ describe("formatters utility", () => {
       const todayString = getLocalIsoDate();
       const match = /^\d{4}-\d{2}-\d{2}$/.test(todayString);
       expect(match).toBe(true);
-    });
-  });
-
-  describe("removeUndefinedFields", () => {
-    it("removes undefined fields but keeps null, empty strings, and zero", () => {
-      const input = {
-        a: "test",
-        b: undefined,
-        c: null,
-        d: "",
-        e: 0,
-        f: false,
-      };
-      const result = removeUndefinedFields(input);
-      expect(result).toEqual({
-        a: "test",
-        c: null,
-        d: "",
-        e: 0,
-        f: false,
-      });
-      expect("b" in result).toBe(false);
     });
   });
 });

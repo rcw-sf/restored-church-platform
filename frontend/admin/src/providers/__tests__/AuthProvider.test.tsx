@@ -23,6 +23,7 @@ vi.mock("firebase/firestore", () => ({
   doc: vi.fn(),
   getDoc: vi.fn(),
   getFirestore: vi.fn(),
+  initializeFirestore: vi.fn(),
 }));
 
 vi.mock("react-router", async (importActual) => {
