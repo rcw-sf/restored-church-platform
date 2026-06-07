@@ -66,7 +66,10 @@ describe("giving-firestore", () => {
       const to = DateTime.fromISO("2023-01-07");
 
       const mockMemberDoc = {
-        data: () => ({ individualId: "member1", sundayDate: "2023-01-01" }),
+        data: () => ({
+          pushpayIndividualId: "member1",
+          sundayDate: "2023-01-01",
+        }),
       } as unknown;
       const mockQuery = {
         where: vi.fn().mockReturnThis(),
@@ -103,7 +106,7 @@ describe("giving-firestore", () => {
       );
 
       expect(result.memberGivingAggregates).toEqual([
-        { individualId: "member1", sundayDate: "2023-01-01" },
+        { pushpayIndividualId: "member1", sundayDate: "2023-01-01" },
       ]);
       expect(result.nonMemberGiving).toEqual([]);
       expect(monitor.recordFirestoreReads).toHaveBeenCalled();
@@ -115,7 +118,7 @@ describe("giving-firestore", () => {
       const transactions: TransactionDoc[] = [
         {
           transactionId: "txn1",
-          individualId: "member1",
+          pushpayIndividualId: "member1",
           name: "John Doe",
           amount: 100,
           tenantId: "test-tenant",
@@ -150,7 +153,7 @@ describe("giving-firestore", () => {
     it("should write member and non-member giving records", () => {
       const memberGiving: WeeklyMemberGivingDoc[] = [
         {
-          individualId: "member1",
+          pushpayIndividualId: "member1",
           sundayDate: "2023-01-01",
           name: "John Doe",
           gave: true,
@@ -160,7 +163,7 @@ describe("giving-firestore", () => {
       ];
       const nonMemberGiving: WeeklyNonMemberGivingDoc[] = [
         {
-          individualId: "nonmember1",
+          pushpayIndividualId: "nonmember1",
           sundayDate: "2023-01-01",
           name: "Jane Doe",
           totalAmount: 50,
@@ -192,13 +195,13 @@ describe("giving-firestore", () => {
     it("should mark non-givers", () => {
       const memberLookup: MemberLookup = {
         member1: {
-          individualId: "member1",
+          pushpayIndividualId: "member1",
           firstName: "John",
           lastName: "Doe",
           familyId: "family1",
         } as MemberDoc,
         member2: {
-          individualId: "member2",
+          pushpayIndividualId: "member2",
           firstName: "Jane",
           lastName: "Smith",
           familyId: undefined,
@@ -219,7 +222,7 @@ describe("giving-firestore", () => {
 
       expect(memberGivingAggregates).toHaveLength(1);
       expect(memberGivingAggregates[0]).toMatchObject({
-        individualId: "member2",
+        pushpayIndividualId: "member2",
         sundayDate: "2023-01-01",
         name: "Jane Smith",
         gave: false,

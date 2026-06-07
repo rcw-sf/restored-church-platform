@@ -11,18 +11,20 @@ export function resolvePayerId(
     (l) => l.relationship === "person_id",
   )?.value;
   let foundId =
-    personId && members[personId] ? members[personId].individualId : null;
+    personId && members[personId]
+      ? members[personId].pushpayIndividualId
+      : null;
 
   // Priority 2: Payer Export Key
   if (!foundId && transaction.payer?.exportKey) {
     const member = members[transaction.payer.exportKey];
-    foundId = member?.individualId || null;
+    foundId = member?.pushpayIndividualId || null;
   }
 
   // Priority 3: Community Member Key
   if (!foundId && transaction.communityMember?.key) {
     const member = members[transaction.communityMember.key];
-    foundId = member?.individualId || null;
+    foundId = member?.pushpayIndividualId || null;
   }
 
   // Priority 4: Spouse Community Member Key
@@ -34,7 +36,7 @@ export function resolvePayerId(
         m.pushpaySpouseCommunityMemberKey === transaction.communityMember?.key,
     );
     if (memberWithSpouseKey) {
-      foundId = memberWithSpouseKey.individualId;
+      foundId = memberWithSpouseKey.pushpayIndividualId;
     }
   }
 

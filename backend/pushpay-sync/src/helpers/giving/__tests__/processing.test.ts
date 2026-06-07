@@ -34,7 +34,7 @@ describe("giving-processing", () => {
     vi.clearAllMocks();
     memberLookup = {
       member1: {
-        individualId: "member1",
+        pushpayIndividualId: "member1",
         firstName: "John",
         lastName: "Doe",
         familyId: "family1",
@@ -80,7 +80,7 @@ describe("giving-processing", () => {
 
       expect(result).toMatchObject({
         transactionId: "txn1",
-        individualId: "member1",
+        pushpayIndividualId: "member1",
         name: "John Doe",
         amount: 100,
         fundName: "General Fund",
@@ -153,7 +153,7 @@ describe("giving-processing", () => {
       expect(result.refunds[0]).toMatchObject({
         originalTransactionId: "txn1",
         refundTransactionId: "refund1",
-        individualId: "member1",
+        pushpayIndividualId: "member1",
         sundayDate: "2023-01-01",
       });
     });
@@ -163,7 +163,7 @@ describe("giving-processing", () => {
     it("should add payment to existing record", () => {
       const memberGivingAggregates: WeeklyMemberGivingDoc[] = [
         {
-          individualId: "member1",
+          pushpayIndividualId: "member1",
           sundayDate: "2023-01-01",
           name: "John Doe",
           totalAmount: 50,
@@ -181,7 +181,7 @@ describe("giving-processing", () => {
       ];
 
       const member: MemberDoc = {
-        individualId: "member1",
+        pushpayIndividualId: "member1",
         firstName: "John",
         lastName: "Doe",
       };
@@ -215,7 +215,7 @@ describe("giving-processing", () => {
       const memberGivingAggregates: WeeklyMemberGivingDoc[] = [];
 
       const member: MemberDoc = {
-        individualId: "member1",
+        pushpayIndividualId: "member1",
         firstName: "John",
         lastName: "Doe",
       };
@@ -243,7 +243,7 @@ describe("giving-processing", () => {
 
       expect(memberGivingAggregates).toHaveLength(1);
       expect(memberGivingAggregates[0]).toMatchObject({
-        individualId: "member1",
+        pushpayIndividualId: "member1",
         sundayDate: "2023-01-01",
         name: "John Doe",
         totalAmount: 100,
@@ -256,7 +256,7 @@ describe("giving-processing", () => {
     it("should add to existing record", () => {
       const nonMemberGiving: WeeklyNonMemberGivingDoc[] = [
         {
-          individualId: "nonmember1",
+          pushpayIndividualId: "nonmember1",
           sundayDate: "2023-01-01",
           name: "Jane Doe",
           totalAmount: 25,
@@ -323,7 +323,7 @@ describe("giving-processing", () => {
 
       expect(nonMemberGiving).toHaveLength(1);
       expect(nonMemberGiving[0]).toMatchObject({
-        individualId: "nonmember1",
+        pushpayIndividualId: "nonmember1",
         sundayDate: "2023-01-01",
         name: "Jane Doe",
         totalAmount: 100,
@@ -335,7 +335,7 @@ describe("giving-processing", () => {
     it("should remove refunded payments", () => {
       const memberGivingAggregates: WeeklyMemberGivingDoc[] = [
         {
-          individualId: "member1",
+          pushpayIndividualId: "member1",
           sundayDate: "2023-01-01",
           name: "John Doe",
           totalAmount: 200,
@@ -363,7 +363,7 @@ describe("giving-processing", () => {
         {
           originalTransactionId: "txn1",
           refundTransactionId: "refund1",
-          individualId: "member1",
+          pushpayIndividualId: "member1",
           sundayDate: "2023-01-01",
         },
       ];

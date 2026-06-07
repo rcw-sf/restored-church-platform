@@ -21,7 +21,7 @@ vi.mock("fs", () => ({
 describe("Cache Utils", () => {
   const mockMemberLookup: MemberLookup = {
     individual1: {
-      individualId: "individual1",
+      pushpayIndividualId: "individual1",
       firstName: "John",
       lastName: "Doe",
       pledge: 100,
@@ -33,7 +33,7 @@ describe("Cache Utils", () => {
       tenantId: "test-tenant",
     },
     key2: {
-      individualId: "individual2",
+      pushpayIndividualId: "individual2",
       firstName: "Jane",
       lastName: "Smith",
       pledge: 50,
@@ -317,7 +317,7 @@ describe("Cache Utils", () => {
       for (let i = 0; i < 1000; i++) {
         (largeMemberLookup as Record<string, unknown>)[`individual${i}`] = {
           ...mockMemberLookup.individual1,
-          individualId: `individual${i}`,
+          pushpayIndividualId: `individual${i}`,
         };
       }
 

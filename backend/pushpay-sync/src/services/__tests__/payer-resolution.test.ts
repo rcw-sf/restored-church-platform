@@ -22,28 +22,28 @@ function createMockTransaction(
 function createMockMemberLookup(): MemberLookup {
   return {
     "person-123": {
-      individualId: "person-123",
+      pushpayIndividualId: "person-123",
       firstName: "John",
       lastName: "Doe",
       pushpayCommunityMemberKey: "community-123",
       tenantId: "test-tenant",
     },
     "community-123": {
-      individualId: "person-123",
+      pushpayIndividualId: "person-123",
       firstName: "John",
       lastName: "Doe",
       pushpayCommunityMemberKey: "community-123",
       tenantId: "test-tenant",
     },
     "export-key-456": {
-      individualId: "person-456",
+      pushpayIndividualId: "person-456",
       firstName: "Jane",
       lastName: "Smith",
       pushpayExportKey: "export-key-456",
       tenantId: "test-tenant",
     },
     "spouse-community-456": {
-      individualId: "person-456",
+      pushpayIndividualId: "person-456",
       firstName: "Jane",
       lastName: "Doe",
       pushpaySpouseCommunityMemberKey: "spouse-community-456",

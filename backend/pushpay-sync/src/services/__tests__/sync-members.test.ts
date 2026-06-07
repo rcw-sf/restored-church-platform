@@ -65,6 +65,11 @@ vi.mock("../../config/firebase.js", () => ({
       firestore: vi.fn().mockReturnValue({
         collection: vi.fn().mockReturnThis(),
         doc: vi.fn().mockReturnThis(),
+        id: "mock-generated-id",
+        get: vi.fn().mockResolvedValue({
+          size: 0,
+          forEach: vi.fn(),
+        }),
         batch: vi.fn().mockReturnValue({
           set: vi.fn(),
           commit: vi.fn().mockResolvedValue(null),
@@ -189,10 +194,10 @@ describe("syncMembers service", () => {
     const docs = firstCall[1] as { id: string; data: MemberDoc }[];
 
     expect(docs).toHaveLength(1);
-    expect(docs[0].id).toBe("pushpay-1");
+    expect(docs[0].id).toBe("mock-generated-id");
     const memberDoc = docs[0].data;
     expect(memberDoc).toMatchObject({
-      individualId: "pushpay-1",
+      pushpayIndividualId: "pushpay-1",
       firstName: "John",
       lastName: "Doe",
       gender: "Male",
@@ -342,28 +347,28 @@ describe("syncMembers service", () => {
   it("should calculate member statistics with pledge totals and region breakdown", async () => {
     const mockMemberDocs: MemberDoc[] = [
       {
-        individualId: "member-1",
+        pushpayIndividualId: "member-1",
         firstName: "John",
         lastName: "Doe",
         pledge: 100,
         region: "San Mateo",
       },
       {
-        individualId: "member-2",
+        pushpayIndividualId: "member-2",
         firstName: "Jane",
         lastName: "Smith",
         pledge: 200,
         region: "San Mateo",
       },
       {
-        individualId: "member-3",
+        pushpayIndividualId: "member-3",
         firstName: "Bob",
         lastName: "Jones",
         pledge: 50,
         region: "Berkeley",
       },
       {
-        individualId: "member-4",
+        pushpayIndividualId: "member-4",
         firstName: "Alice",
         lastName: "Brown",
         // No pledge
@@ -413,7 +418,7 @@ describe("syncMembers service", () => {
   it("should handle zero members with pledge in statistics", async () => {
     const mockMemberDocs: MemberDoc[] = [
       {
-        individualId: "member-1",
+        pushpayIndividualId: "member-1",
         firstName: "John",
         lastName: "Doe",
         // No pledge
@@ -446,7 +451,7 @@ describe("syncMembers service", () => {
   it("should record Firestore write when monitor is provided", async () => {
     const mockMemberDocs: MemberDoc[] = [
       {
-        individualId: "member-1",
+        pushpayIndividualId: "member-1",
         firstName: "John",
         lastName: "Doe",
         pledge: 100,

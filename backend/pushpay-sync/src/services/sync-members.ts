@@ -138,17 +138,37 @@ async function deleteMembers(
 
   console.log(`🗑️ Deleting ${individuals.length} members from Firestore...`);
 
-  const itemsToDelete = individuals.map((individual) => ({
-    id: individual.id,
-  }));
+  const membersRef = firebaseAdmin
+    .firestore()
+    .collection("tenants")
+    .doc(env.tenantId)
+    .collection("members");
+
+  const existingMembersSnapshot = await membersRef.get();
+  const membersByPushpayId = new Map<string, string>();
+
+  existingMembersSnapshot.forEach((doc) => {
+    const data = doc.data();
+    if (data.pushpayIndividualId) {
+      membersByPushpayId.set(data.pushpayIndividualId, doc.id);
+    }
+  });
+
+  const itemsToDelete: { id: string }[] = [];
+  for (const individual of individuals) {
+    const firestoreDocId = membersByPushpayId.get(individual.id);
+    if (firestoreDocId) {
+      itemsToDelete.push({ id: firestoreDocId });
+    }
+  }
+
+  if (itemsToDelete.length === 0) {
+    console.log("ℹ️ No matched members to delete in Firestore.");
+    return;
+  }
 
   await commitInChunks(firebaseAdmin, itemsToDelete, (batch, item) => {
-    const ref = firebaseAdmin
-      .firestore()
-      .collection("tenants")
-      .doc(env.tenantId)
-      .collection("members")
-      .doc(item.id);
+    const ref = membersRef.doc(item.id);
     batch.delete(ref);
   });
 
@@ -228,6 +248,31 @@ export async function processIndividuals(
 
   let changedCount = 0;
 
+  console.log("Fetching existing members for Safe Auto-Match...");
+  const membersRef = firebaseAdmin
+    .firestore()
+    .collection("tenants")
+    .doc(env.tenantId)
+    .collection("members");
+  const existingMembersSnapshot = await membersRef.get();
+
+  const membersByPushpayId = new Map<string, string>();
+  const membersByMatchKey = new Map<string, string>();
+
+  existingMembersSnapshot.forEach((docSnap) => {
+    const data = docSnap.data() as MemberDoc;
+    if (data.pushpayIndividualId) {
+      membersByPushpayId.set(data.pushpayIndividualId, docSnap.id);
+    }
+    if (data.email && data.firstName && data.lastName) {
+      const matchKey = `${data.email.toLowerCase().trim()}|${data.firstName.toLowerCase().trim()}|${data.lastName.toLowerCase().trim()}`;
+      membersByMatchKey.set(matchKey, docSnap.id);
+    }
+  });
+  console.log(
+    `Loaded ${existingMembersSnapshot.size} existing members for matching.`,
+  );
+
   for (const individual of filteredIndividuals) {
     // Normalize XML arrays (parser returns single object instead of array for one element)
     // Use extractXmlArray to handle cases where parent is empty string ""
@@ -260,8 +305,29 @@ export async function processIndividuals(
       "Pushpay Spouse Community Member Key",
     );
 
+    let firestoreDocId = membersByPushpayId.get(individual.id);
+
+    if (
+      !firestoreDocId &&
+      individual.email &&
+      individual.first_name &&
+      individual.last_name
+    ) {
+      const matchKey = `${individual.email.toLowerCase().trim()}|${individual.first_name.toLowerCase().trim()}|${individual.last_name.toLowerCase().trim()}`;
+      firestoreDocId = membersByMatchKey.get(matchKey);
+      if (firestoreDocId) {
+        console.log(
+          `Safe Auto-Match successful for ${individual.first_name} ${individual.last_name} (${individual.email})`,
+        );
+      }
+    }
+
+    if (!firestoreDocId) {
+      firestoreDocId = membersRef.doc().id;
+    }
+
     const doc: MemberDoc = {
-      individualId: individual.id,
+      pushpayIndividualId: individual.id,
       firstName: individual.first_name,
       lastName: individual.last_name,
       gender: individual.gender,
@@ -284,7 +350,7 @@ export async function processIndividuals(
         .map((m) => {
           const individuals = normalizeArray(m.individual);
           return {
-            individualId: individuals[0]?.id,
+            pushpayIndividualId: individuals[0]?.id,
             fullName: extractTextValue(individuals[0]),
             familyPosition: m.family_position,
           };
@@ -301,7 +367,7 @@ export async function processIndividuals(
       }),
     };
 
-    docs.push({ id: individual.id, data: doc });
+    docs.push({ id: firestoreDocId, data: doc });
     memberDocs.push(doc);
   }
 
@@ -357,8 +423,8 @@ async function updateMemberCache(memberDocs: MemberDoc[]) {
     const memberLookup: MemberLookup = {};
 
     for (const memberDoc of memberDocs) {
-      // Add to lookup with individualId
-      memberLookup[memberDoc.individualId] = memberDoc;
+      // Add to lookup with pushpayIndividualId
+      memberLookup[memberDoc.pushpayIndividualId] = memberDoc;
 
       // Add pushpay keys if they exist in the member data
       if (memberDoc.pushpayCommunityMemberKey) {

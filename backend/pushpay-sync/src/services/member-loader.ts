@@ -19,7 +19,7 @@ export async function loadMappingData(firebaseAdmin: FirebaseAdmin) {
       .doc(tenantId)
       .collection("members")
       .select(
-        "individualId",
+        "pushpayIndividualId",
         "firstName",
         "lastName",
         "pledge",
@@ -30,7 +30,7 @@ export async function loadMappingData(firebaseAdmin: FirebaseAdmin) {
         "pushpayCommunityMemberKey",
         "pushpaySpouseCommunityMemberKey",
       )
-      .orderBy("individualId")
+      .orderBy("pushpayIndividualId")
       .limit(batchSize);
 
     if (lastDoc) {
@@ -47,7 +47,7 @@ export async function loadMappingData(firebaseAdmin: FirebaseAdmin) {
       snapshot.forEach((doc) => {
         const data = doc.data() as MemberDoc;
         const {
-          individualId,
+          pushpayIndividualId,
           pushpayCommunityMemberKey,
           pushpaySpouseCommunityMemberKey,
         } = data;
@@ -55,8 +55,8 @@ export async function loadMappingData(firebaseAdmin: FirebaseAdmin) {
         // Map by CHMS individual ID (external link from Pushpay)
         // Usage: When Pushpay sends a transaction with an external link containing
         // a CHMS "person_id", we can directly match to the member record
-        if (individualId) {
-          memberLookup[individualId] = data;
+        if (pushpayIndividualId) {
+          memberLookup[pushpayIndividualId] = data;
         }
 
         // Map by Pushpay community member key (Pushpay's unique identifier)
@@ -83,11 +83,11 @@ export async function loadMappingData(firebaseAdmin: FirebaseAdmin) {
         if (data.familyMembers) {
           for (const familyMember of data.familyMembers) {
             if (
-              familyMember.individualId &&
+              familyMember.pushpayIndividualId &&
               (familyMember.familyPosition === "Primary Contact" ||
                 familyMember.familyPosition === "Spouse")
             ) {
-              memberLookup[familyMember.individualId] = data;
+              memberLookup[familyMember.pushpayIndividualId] = data;
             }
           }
         }
