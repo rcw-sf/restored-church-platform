@@ -6,7 +6,7 @@ import { useMembersFilters } from "../useMembersFilters";
 describe("useMembersFilters", () => {
   const mockMembers: MemberDoc[] = [
     {
-      individualId: "1",
+      id: "1",
       firstName: "Alice",
       lastName: "Smith",
       email: "alice.smith@example.com",
@@ -17,7 +17,7 @@ describe("useMembersFilters", () => {
       pledge: 100,
     },
     {
-      individualId: "2",
+      id: "2",
       firstName: "Bob",
       lastName: "Johnson",
       email: "bob.johnson@example.com",
@@ -45,7 +45,7 @@ describe("useMembersFilters", () => {
 
     expect(result.current.filteredMembers).toEqual([
       {
-        individualId: "1",
+        id: "1",
         firstName: "Alice",
         lastName: "Smith",
         email: "alice.smith@example.com",
@@ -72,7 +72,7 @@ describe("useMembersFilters", () => {
 
     expect(result.current.filteredMembers).toEqual([
       {
-        individualId: "2",
+        id: "2",
         firstName: "Bob",
         lastName: "Johnson",
         email: "bob.johnson@example.com",
@@ -99,7 +99,7 @@ describe("useMembersFilters", () => {
 
     expect(result.current.filteredMembers).toEqual([
       {
-        individualId: "1",
+        id: "1",
         firstName: "Alice",
         lastName: "Smith",
         email: "alice.smith@example.com",
@@ -126,7 +126,7 @@ describe("useMembersFilters", () => {
 
     expect(result.current.filteredMembers).toEqual([
       {
-        individualId: "1",
+        id: "1",
         firstName: "Alice",
         lastName: "Smith",
         email: "alice.smith@example.com",
@@ -166,7 +166,7 @@ describe("useMembersFilters", () => {
 
     expect(result.current.filteredMembers).toEqual([
       {
-        individualId: "1",
+        id: "1",
         firstName: "Alice",
         lastName: "Smith",
         email: "alice.smith@example.com",
@@ -197,7 +197,7 @@ describe("useMembersFilters", () => {
 
     expect(result.current.filteredMembers).toEqual([
       {
-        individualId: "1",
+        id: "1",
         firstName: "Alice",
         lastName: "Smith",
         email: "alice.smith@example.com",

@@ -14,7 +14,7 @@ export default function MembersMobileTable({
       {members.length > 0 ? (
         members.map((member) => (
           <div
-            key={member.individualId}
+            key={member.id}
             onClick={() => setSelectedMember(member)}
             className="p-4 hover:bg-base-200/30 active:bg-base-200/50 cursor-pointer transition-colors space-y-2"
           >

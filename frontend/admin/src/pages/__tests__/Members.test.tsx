@@ -7,7 +7,7 @@ import Members from "../Members";
 
 const mockMembers: MemberDoc[] = [
   {
-    individualId: "1",
+    id: "1",
     firstName: "Alice",
     lastName: "Smith",
     email: "alice@example.com",
@@ -18,7 +18,7 @@ const mockMembers: MemberDoc[] = [
     pledge: 500,
   },
   {
-    individualId: "2",
+    id: "2",
     firstName: "Bob",
     lastName: "Jones",
     email: "bob@example.com",
@@ -40,7 +40,7 @@ vi.mock("@/components/members/MembersDesktopTable", () => ({
     <div data-testid="members-desktop-table">
       {props.members.map((member) => (
         <button
-          key={member.individualId}
+          key={member.id}
           data-testid="member-row"
           onClick={() => props.setSelectedMember(member)}
         >
@@ -56,7 +56,7 @@ vi.mock("@/components/members/MembersMobileTable", () => ({
     <div data-testid="members-mobile-table">
       {props.members.map((member) => (
         <button
-          key={member.individualId}
+          key={member.id}
           data-testid="member-row"
           onClick={() => props.setSelectedMember(member)}
         >
@@ -270,7 +270,7 @@ describe("Members Component", () => {
   it("paginates the members list correctly", () => {
     // Generate 12 mock members (will be sorted alphabetically: User 1, User 10, User 11, User 12, User 2, User 3...)
     const mockMembers: MemberDoc[] = Array.from({ length: 12 }, (_, i) => ({
-      individualId: `id-${i + 1}`,
+      id: `id-${i + 1}`,
       firstName: "User",
       lastName: `${String(i + 1).padStart(2, "0")}`, // padded so alphabetical sort is predictable: 01, 02...
       email: `user${i + 1}@example.com`,

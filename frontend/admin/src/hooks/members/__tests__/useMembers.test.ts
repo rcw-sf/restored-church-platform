@@ -35,9 +35,9 @@ describe("useMembers", () => {
 
   it("should fetch, sort and set members correctly", async () => {
     const mockMembers: MemberDoc[] = [
-      { individualId: "1", firstName: "Alice", lastName: "Smith" },
-      { individualId: "2", firstName: "Charlie", lastName: "Brown" },
-      { individualId: "3", firstName: "Bob", lastName: "Smith" },
+      { id: "1", firstName: "Alice", lastName: "Smith" },
+      { id: "2", firstName: "Charlie", lastName: "Brown" },
+      { id: "3", firstName: "Bob", lastName: "Smith" },
     ];
 
     const mockDocs = mockMembers.map((m) => ({
@@ -59,9 +59,9 @@ describe("useMembers", () => {
     expect(result.current.error).toBeNull();
     // Sorted by lastName (Brown first, then Smith) and then firstName (Alice before Bob)
     expect(result.current.members).toEqual([
-      { individualId: "2", firstName: "Charlie", lastName: "Brown" },
-      { individualId: "1", firstName: "Alice", lastName: "Smith" },
-      { individualId: "3", firstName: "Bob", lastName: "Smith" },
+      { id: "2", firstName: "Charlie", lastName: "Brown" },
+      { id: "1", firstName: "Alice", lastName: "Smith" },
+      { id: "3", firstName: "Bob", lastName: "Smith" },
     ]);
   });
 
