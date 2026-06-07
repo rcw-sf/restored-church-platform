@@ -23,7 +23,7 @@ export function useMembers() {
         const querySnapshot = await getDocs(collRef);
         const memberList: MemberDoc[] = [];
         querySnapshot.forEach((docSnap) => {
-          memberList.push(docSnap.data() as MemberDoc);
+          memberList.push({ id: docSnap.id, ...docSnap.data() } as MemberDoc);
         });
 
         // Sort members: by last name then first name

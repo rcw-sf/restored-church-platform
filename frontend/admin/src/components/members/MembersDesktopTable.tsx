@@ -25,7 +25,7 @@ export default function MembersDesktopTable({
           {members.length > 0 ? (
             members.map((member) => (
               <tr
-                key={member.individualId}
+                key={member.id}
                 onClick={() => setSelectedMember(member)}
                 className="cursor-pointer hover:bg-base-200/50 transition-colors"
               >

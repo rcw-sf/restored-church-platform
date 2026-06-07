@@ -28,7 +28,8 @@ export type TakeawayType =
   | "";
 
 export interface MemberDoc {
-  individualId?: string;
+  id?: string;
+  pushpayIndividualId?: string;
   firstName: string;
   lastName: string;
   gender?: string;
@@ -58,7 +59,7 @@ export interface MemberDoc {
 }
 
 export interface FamilyMemberDoc {
-  individualId?: string;
+  pushpayIndividualId?: string;
   fullName?: string;
   familyPosition?: string;
 }

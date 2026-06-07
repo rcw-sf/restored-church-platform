@@ -15,7 +15,7 @@ describe("MemberDetailsModal", () => {
 
   it("renders active member with basic fields correctly", () => {
     const basicMember: MemberDoc = {
-      individualId: "M123",
+      id: "M123",
       firstName: "John",
       lastName: "Doe",
     };
@@ -32,7 +32,7 @@ describe("MemberDetailsModal", () => {
 
   it("renders member with all fields correctly", () => {
     const fullMember: MemberDoc = {
-      individualId: "M456",
+      id: "M456",
       firstName: "Alice",
       lastName: "Smith",
       email: "alice@example.com",
@@ -50,7 +50,7 @@ describe("MemberDetailsModal", () => {
       familyPosition: "Spouse",
       familyMembers: [
         {
-          individualId: "M789",
+          pushpayIndividualId: "M789",
           fullName: "Bob Johnson",
           familyPosition: "Head of Household",
         },
@@ -105,7 +105,7 @@ describe("MemberDetailsModal", () => {
 
   it("renders fallaway member with all fields, reason for fallaway, family members and integration keys", () => {
     const fullMember: MemberDoc = {
-      individualId: "M999",
+      id: "M999",
       firstName: "Jane",
       lastName: "Smith",
       email: "jane@smith.org",
@@ -126,7 +126,7 @@ describe("MemberDetailsModal", () => {
       familyPosition: "Spouse",
       familyMembers: [
         {
-          individualId: "M998",
+          pushpayIndividualId: "M998",
           fullName: "Alex Smith",
           familyPosition: "Head of Household",
         },
@@ -185,7 +185,7 @@ describe("MemberDetailsModal", () => {
 
   it("renders moveaway member with movedTo field and no reason for fallaway", () => {
     const moveawayMember: MemberDoc = {
-      individualId: "M777",
+      id: "M777",
       firstName: "Tom",
       lastName: "Brown",
       takeawayType: "Transfer",
@@ -208,7 +208,7 @@ describe("MemberDetailsModal", () => {
 
   it("calls onClose when the close icon button is clicked", () => {
     const basicMember: MemberDoc = {
-      individualId: "M123",
+      id: "M123",
       firstName: "John",
       lastName: "Doe",
     };

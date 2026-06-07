@@ -29,7 +29,7 @@ export default function MemberDetailsModal({
             {member.firstName} {member.lastName}
           </h3>
           <p className="text-sm opacity-70 mt-1">
-            Member ID: {member.individualId || "N/A"}
+            Member ID: {member.id || "N/A"}
           </p>
         </div>
 
@@ -226,11 +226,11 @@ export default function MemberDetailsModal({
                   </thead>
                   <tbody>
                     {member.familyMembers.map((fam, idx) => (
-                      <tr key={fam.individualId || idx}>
+                      <tr key={fam.pushpayIndividualId || idx}>
                         <td className="font-semibold">{fam.fullName || "-"}</td>
                         <td>{fam.familyPosition || "-"}</td>
                         <td className="font-mono opacity-60">
-                          {fam.individualId || "-"}
+                          {fam.pushpayIndividualId || "-"}
                         </td>
                       </tr>
                     ))}
