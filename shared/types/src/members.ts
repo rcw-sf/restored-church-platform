@@ -28,7 +28,7 @@ export type TakeawayType =
   | "";
 
 export interface MemberDoc {
-  individualId: string;
+  individualId?: string;
   firstName: string;
   lastName: string;
   gender?: string;
