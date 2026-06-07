@@ -12,7 +12,7 @@ export type Region =
 export type SuperRegion = "Peninsula" | "South Bay" | "East Bay" | "";
 
 export interface MemberDoc {
-  individualId: string;
+  pushpayIndividualId: string;
   firstName: string;
   lastName: string;
   gender?: string;
@@ -42,7 +42,7 @@ export interface MemberDoc {
 }
 
 export interface FamilyMemberDoc {
-  individualId?: string;
+  pushpayIndividualId?: string;
   fullName?: string;
   familyPosition?: string;
 }

@@ -106,7 +106,7 @@ export function writeGivingRecords(
   console.log(`   ✅ Gave: ${givingCount}`);
   console.log(`   ❌ Didn't give: ${notGivingCount}`);
   commitInChunks(firebaseAdmin, memberGivingAggregates, (batch, data) => {
-    const docId = `${data.sundayDate}_${data.individualId}`;
+    const docId = `${data.sundayDate}_${data.pushpayIndividualId}`;
     batch.set(
       db
         .collection("tenants")
@@ -123,7 +123,7 @@ export function writeGivingRecords(
     `\n💾 Writing ${nonMemberGiving.length} non-member giving records...`,
   );
   commitInChunks(firebaseAdmin, nonMemberGiving, (batch, data) => {
-    const docId = `${data.sundayDate}_${data.individualId}`;
+    const docId = `${data.sundayDate}_${data.pushpayIndividualId}`;
     batch.set(
       db
         .collection("tenants")
@@ -147,8 +147,8 @@ export function markNonGivers(
   env: ReturnType<typeof getEnvironment>,
   memberGivingAggregates: WeeklyMemberGivingDoc[],
 ): void {
-  Object.entries(memberLookup).forEach(([individualId, member]) => {
-    if (processedMemberIds.has(individualId)) {
+  Object.entries(memberLookup).forEach(([pushpayIndividualId, member]) => {
+    if (processedMemberIds.has(pushpayIndividualId)) {
       return;
     }
     let gave = false;
@@ -156,7 +156,7 @@ export function markNonGivers(
       gave = true;
     }
     memberGivingAggregates.push({
-      individualId,
+      pushpayIndividualId,
       familyId: member?.familyId,
       sundayDate: targetSundayForNonGivers,
       name: `${member.firstName || ""} ${member.lastName || ""}`.trim(),

@@ -6,7 +6,7 @@ export type TransactionStatus = "completed" | "failed" | "refunded";
 
 export interface TransactionDoc {
   transactionId: string;
-  individualId: string | null;
+  pushpayIndividualId: string | null;
   name: string;
   fundName: string;
   fundKey?: string;
@@ -78,7 +78,7 @@ export interface PaymentDetail {
 }
 
 export interface WeeklyMemberGivingDoc {
-  individualId: string;
+  pushpayIndividualId: string;
   familyId?: string;
   sundayDate?: string;
   name: string;
@@ -94,7 +94,7 @@ export interface WeeklyMemberGivingDoc {
 
 export interface WeeklyNonMemberGivingDoc {
   sundayDate: string;
-  individualId: string; // communityMember.key from Pushpay
+  pushpayIndividualId: string; // communityMember.key from Pushpay
   name: string;
   totalAmount: number; // Total amount (sum of all payments)
   tenantId?: string;

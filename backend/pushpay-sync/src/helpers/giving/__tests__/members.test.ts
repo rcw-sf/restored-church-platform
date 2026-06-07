@@ -30,7 +30,7 @@ describe("giving-members", () => {
         await import("../../../utils/github-cache.js");
       vi.mocked(loadGitHubCacheMemberData).mockReturnValue({
         member1: {
-          individualId: "member1",
+          pushpayIndividualId: "member1",
           firstName: "John",
           lastName: "Doe",
         },
@@ -44,7 +44,7 @@ describe("giving-members", () => {
 
       expect(result).toEqual({
         member1: {
-          individualId: "member1",
+          pushpayIndividualId: "member1",
           firstName: "John",
           lastName: "Doe",
         },
@@ -61,7 +61,7 @@ describe("giving-members", () => {
       vi.mocked(loadGitHubCacheMemberData).mockReturnValue(null);
       vi.mocked(loadCachedMemberData).mockReturnValue({
         member1: {
-          individualId: "member1",
+          pushpayIndividualId: "member1",
           firstName: "Jane",
           lastName: "Smith",
         },
@@ -75,7 +75,7 @@ describe("giving-members", () => {
 
       expect(result).toEqual({
         member1: {
-          individualId: "member1",
+          pushpayIndividualId: "member1",
           firstName: "Jane",
           lastName: "Smith",
         },
@@ -98,7 +98,7 @@ describe("giving-members", () => {
       vi.mocked(loadCachedMemberData).mockReturnValue(null);
       vi.mocked(loadMappingData).mockResolvedValue({
         member1: {
-          individualId: "member1",
+          pushpayIndividualId: "member1",
           firstName: "Bob",
           lastName: "Wilson",
         },
@@ -109,7 +109,7 @@ describe("giving-members", () => {
 
       expect(result).toEqual({
         member1: {
-          individualId: "member1",
+          pushpayIndividualId: "member1",
           firstName: "Bob",
           lastName: "Wilson",
         },
@@ -119,7 +119,7 @@ describe("giving-members", () => {
       expect(saveMemberDataToCache).toHaveBeenCalledWith(
         {
           member1: {
-            individualId: "member1",
+            pushpayIndividualId: "member1",
             firstName: "Bob",
             lastName: "Wilson",
           },
@@ -129,7 +129,7 @@ describe("giving-members", () => {
       expect(saveMemberDataToGitHubCache).toHaveBeenCalledWith(
         {
           member1: {
-            individualId: "member1",
+            pushpayIndividualId: "member1",
             firstName: "Bob",
             lastName: "Wilson",
           },

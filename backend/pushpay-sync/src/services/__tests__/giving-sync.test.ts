@@ -89,7 +89,7 @@ describe("giving-sync", () => {
 
     mockMemberLookup = {
       member1: {
-        individualId: "member1",
+        pushpayIndividualId: "member1",
         firstName: "John",
         lastName: "Doe",
         familyId: "family1",
@@ -104,7 +104,7 @@ describe("giving-sync", () => {
     mockAggregates = {
       memberGivingAggregates: [
         {
-          individualId: "member1",
+          pushpayIndividualId: "member1",
           sundayDate: "2023-01-01",
           name: "John Doe",
           totalAmount: 100,
@@ -116,7 +116,7 @@ describe("giving-sync", () => {
       transactionDocs: [
         {
           transactionId: "txn1",
-          individualId: "member1",
+          pushpayIndividualId: "member1",
           name: "John Doe",
           amount: 100,
           fundName: "General Fund",

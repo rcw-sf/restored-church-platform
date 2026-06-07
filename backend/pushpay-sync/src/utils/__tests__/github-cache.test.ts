@@ -22,14 +22,14 @@ describe("github-cache", () => {
   const originalEnv = process.env;
   const mockMemberLookup: MemberLookup = {
     "123": {
-      individualId: "123",
+      pushpayIndividualId: "123",
       firstName: "John",
       lastName: "Doe",
       email: "john@example.com",
       tenantId: "test-tenant",
     },
     "456": {
-      individualId: "456",
+      pushpayIndividualId: "456",
       firstName: "Jane",
       lastName: "Smith",
       email: "jane@example.com",

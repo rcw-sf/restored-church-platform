@@ -35,7 +35,7 @@ export interface GivingAggregates {
   refunds: Array<{
     originalTransactionId: string;
     refundTransactionId: string;
-    individualId: string | null;
+    pushpayIndividualId: string | null;
     sundayDate: string;
   }>;
 }
@@ -45,7 +45,7 @@ export interface GivingAggregates {
  */
 export function buildTransactionDoc(
   transaction: PushpayTransaction,
-  individualId: string | null,
+  pushpayIndividualId: string | null,
   givenDate: DateTime,
   sundayDate: string,
   env: ReturnType<typeof getEnvironment>,
@@ -67,7 +67,7 @@ export function buildTransactionDoc(
 
   return {
     transactionId: transaction.transactionId,
-    individualId,
+    pushpayIndividualId,
     name: transaction.payer.fullName,
     payer: transaction.payer,
     fundName: transaction.fund.name,
@@ -94,7 +94,7 @@ export function buildTransactionDoc(
  */
 export function processMemberGiving(
   member: MemberDoc,
-  individualId: string | null,
+  pushpayIndividualId: string | null,
   sundayDate: string,
   amount: number,
   payment: PaymentDetail,
@@ -103,7 +103,9 @@ export function processMemberGiving(
   memberGivingAggregates: WeeklyMemberGivingDoc[],
 ): void {
   const existingRecord = memberGivingAggregates.find(
-    (m) => m.individualId === individualId && m.sundayDate === sundayDate,
+    (m) =>
+      m.pushpayIndividualId === pushpayIndividualId &&
+      m.sundayDate === sundayDate,
   );
 
   if (existingRecord) {
@@ -120,7 +122,7 @@ export function processMemberGiving(
       existingRecord.payments?.reduce((sum, p) => sum + p.amount, 0) || 0;
   } else {
     memberGivingAggregates.push({
-      individualId: individualId || "",
+      pushpayIndividualId: pushpayIndividualId || "",
       familyId: member?.familyId,
       sundayDate,
       name: `${member.firstName || ""} ${member.lastName || ""}`.trim(),
@@ -140,7 +142,7 @@ export function processMemberGiving(
  * Process non-member giving - add payment to existing record or create new one
  */
 export function processNonMemberGiving(
-  individualId: string | null,
+  pushpayIndividualId: string | null,
   sundayDate: string,
   payerName: string,
   amount: number,
@@ -151,7 +153,8 @@ export function processNonMemberGiving(
 ): void {
   const existingNonMember = nonMemberGiving.find(
     (n) =>
-      n.individualId === (individualId || "") && n.sundayDate === sundayDate,
+      n.pushpayIndividualId === (pushpayIndividualId || "") &&
+      n.sundayDate === sundayDate,
   );
 
   if (existingNonMember) {
@@ -170,7 +173,7 @@ export function processNonMemberGiving(
   } else {
     nonMemberGiving.push({
       sundayDate,
-      individualId: individualId || "",
+      pushpayIndividualId: pushpayIndividualId || "",
       name: payerName,
       totalAmount: amount,
       tenantId: env.tenantId,
@@ -208,7 +211,7 @@ export function processTransactions(
   const refunds: Array<{
     originalTransactionId: string;
     refundTransactionId: string;
-    individualId: string | null;
+    pushpayIndividualId: string | null;
     sundayDate: string;
   }> = [];
 
@@ -222,7 +225,7 @@ export function processTransactions(
 
     const { transactionId, givenOn, createdOn, payer } = transaction;
 
-    const individualId = resolvePayerId(transaction, memberLookup);
+    const pushpayIndividualId = resolvePayerId(transaction, memberLookup);
     const givenDate = calculateGiftDate(givenOn, createdOn);
     const sundayDate = calculateSundayDate(givenDate).toFormat("yyyy-MM-dd");
     const amount = Number(transaction.amount.amount) || 0;
@@ -232,7 +235,7 @@ export function processTransactions(
     // Build transaction document
     const transactionDoc = buildTransactionDoc(
       transaction,
-      individualId,
+      pushpayIndividualId,
       givenDate,
       sundayDate,
       env,
@@ -244,7 +247,7 @@ export function processTransactions(
       refunds.push({
         originalTransactionId: transaction.refundedBy.transactionId,
         refundTransactionId: transaction.transactionId,
-        individualId,
+        pushpayIndividualId,
         sundayDate,
       });
       continue;
@@ -262,7 +265,7 @@ export function processTransactions(
     }
 
     // Process member and non-member giving
-    const member = memberLookup[individualId || ""];
+    const member = memberLookup[pushpayIndividualId || ""];
 
     const payment: PaymentDetail = {
       transactionId,
@@ -281,7 +284,7 @@ export function processTransactions(
 
       processMemberGiving(
         member,
-        individualId,
+        pushpayIndividualId,
         sundayDate,
         amount,
         payment,
@@ -290,11 +293,11 @@ export function processTransactions(
         memberGivingAggregates,
       );
 
-      processedMemberIds.add(individualId || "");
+      processedMemberIds.add(pushpayIndividualId || "");
     } else {
       stats.nonMemberTransactions++;
       processNonMemberGiving(
-        individualId,
+        pushpayIndividualId,
         sundayDate,
         payer.fullName || "",
         amount,
@@ -324,7 +327,7 @@ export function processRefunds(
   refunds: Array<{
     originalTransactionId: string;
     refundTransactionId: string;
-    individualId: string | null;
+    pushpayIndividualId: string | null;
     sundayDate: string;
   }>,
   memberGivingAggregates: WeeklyMemberGivingDoc[],
@@ -334,11 +337,13 @@ export function processRefunds(
 
   console.log(`\n🔄 Processing ${refunds.length} refunds...`);
   for (const refund of refunds) {
-    const { originalTransactionId, individualId, sundayDate } = refund;
+    const { originalTransactionId, pushpayIndividualId, sundayDate } = refund;
 
     // Try to find in member giving first
     const memberRecord = memberGivingAggregates.find(
-      (m) => m.individualId === individualId && m.sundayDate === sundayDate,
+      (m) =>
+        m.pushpayIndividualId === pushpayIndividualId &&
+        m.sundayDate === sundayDate,
     );
 
     if (memberRecord?.payments) {
@@ -354,7 +359,7 @@ export function processRefunds(
         memberRecord.totalAmount =
           memberRecord.payments.reduce((sum, p) => sum + p.amount, 0) || 0;
         console.log(
-          `   💸 Removed refunded payment ${originalTransactionId} ($${removedPayment.amount}) from member ${individualId}`,
+          `   💸 Removed refunded payment ${originalTransactionId} ($${removedPayment.amount}) from member ${pushpayIndividualId}`,
         );
         if (memberRecord.payments.length === 0) {
           memberRecord.gave = false;
@@ -366,7 +371,8 @@ export function processRefunds(
     // Try to find in non-member giving
     const nonMemberRecord = nonMemberGiving.find(
       (n) =>
-        n.individualId === (individualId || "") && n.sundayDate === sundayDate,
+        n.pushpayIndividualId === (pushpayIndividualId || "") &&
+        n.sundayDate === sundayDate,
     );
 
     if (nonMemberRecord?.payments) {
@@ -382,7 +388,7 @@ export function processRefunds(
         nonMemberRecord.totalAmount =
           nonMemberRecord.payments.reduce((sum, p) => sum + p.amount, 0) || 0;
         console.log(
-          `   💸 Removed refunded payment ${originalTransactionId} ($${removedPayment.amount}) from non-member ${individualId || "unknown"}`,
+          `   💸 Removed refunded payment ${originalTransactionId} ($${removedPayment.amount}) from non-member ${pushpayIndividualId || "unknown"}`,
         );
         continue;
       }

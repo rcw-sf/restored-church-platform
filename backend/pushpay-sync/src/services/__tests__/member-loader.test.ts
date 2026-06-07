@@ -45,7 +45,7 @@ describe("loadMappingData", () => {
     return {
       id,
       data: () => ({
-        individualId: data.individualId || `person-${id}`,
+        pushpayIndividualId: data.pushpayIndividualId || `person-${id}`,
         firstName: data.firstName || "John",
         lastName: data.lastName || "Doe",
         pledge: data.pledge || 0,
@@ -70,12 +70,12 @@ describe("loadMappingData", () => {
     };
   }
 
-  it("should load members and create lookup by individualId", async () => {
+  it("should load members and create lookup by pushpayIndividualId", async () => {
     mockMembersQuery.get
       .mockResolvedValueOnce(
         createMockSnapshot([
-          createMockDoc({ individualId: "person-1" }, "doc-1"),
-          createMockDoc({ individualId: "person-2" }, "doc-2"),
+          createMockDoc({ pushpayIndividualId: "person-1" }, "doc-1"),
+          createMockDoc({ pushpayIndividualId: "person-2" }, "doc-2"),
         ]),
       )
       .mockResolvedValueOnce(createMockSnapshot([]));
@@ -83,9 +83,9 @@ describe("loadMappingData", () => {
     const result = await loadMappingData(mockFirebaseAdmin);
 
     expect(result["person-1"]).toBeDefined();
-    expect(result["person-1"].individualId).toBe("person-1");
+    expect(result["person-1"].pushpayIndividualId).toBe("person-1");
     expect(result["person-2"]).toBeDefined();
-    expect(result["person-2"].individualId).toBe("person-2");
+    expect(result["person-2"].pushpayIndividualId).toBe("person-2");
   });
 
   it("should index members by pushpayCommunityMemberKey", async () => {
@@ -94,7 +94,7 @@ describe("loadMappingData", () => {
         createMockSnapshot([
           createMockDoc(
             {
-              individualId: "person-1",
+              pushpayIndividualId: "person-1",
               pushpayCommunityMemberKey: "community-abc",
             },
             "doc-1",
@@ -106,7 +106,7 @@ describe("loadMappingData", () => {
     const result = await loadMappingData(mockFirebaseAdmin);
 
     expect(result["community-abc"]).toBeDefined();
-    expect(result["community-abc"].individualId).toBe("person-1");
+    expect(result["community-abc"].pushpayIndividualId).toBe("person-1");
   });
 
   it("should index members by pushpaySpouseCommunityMemberKey", async () => {
@@ -115,7 +115,7 @@ describe("loadMappingData", () => {
         createMockSnapshot([
           createMockDoc(
             {
-              individualId: "person-1",
+              pushpayIndividualId: "person-1",
               pushpaySpouseCommunityMemberKey: "spouse-community-xyz",
             },
             "doc-1",
@@ -127,26 +127,29 @@ describe("loadMappingData", () => {
     const result = await loadMappingData(mockFirebaseAdmin);
 
     expect(result["spouse-community-xyz"]).toBeDefined();
-    expect(result["spouse-community-xyz"].individualId).toBe("person-1");
+    expect(result["spouse-community-xyz"].pushpayIndividualId).toBe("person-1");
   });
 
   it("should handle pagination for large datasets", async () => {
     // First page
-    const doc100 = createMockDoc({ individualId: "person-100" }, "doc-100");
+    const doc100 = createMockDoc(
+      { pushpayIndividualId: "person-100" },
+      "doc-100",
+    );
     mockMembersQuery.get
       .mockResolvedValueOnce(
         createMockSnapshot(
           Array(100)
             .fill(null)
             .map((_, i) =>
-              createMockDoc({ individualId: `person-${i}` }, `doc-${i}`),
+              createMockDoc({ pushpayIndividualId: `person-${i}` }, `doc-${i}`),
             )
             .concat(doc100),
         ),
       )
       .mockResolvedValueOnce(
         createMockSnapshot([
-          createMockDoc({ individualId: "person-101" }, "doc-101"),
+          createMockDoc({ pushpayIndividualId: "person-101" }, "doc-101"),
         ]),
       )
       .mockResolvedValueOnce(createMockSnapshot([]));
@@ -164,7 +167,7 @@ describe("loadMappingData", () => {
     await loadMappingData(mockFirebaseAdmin);
 
     expect(mockMembersQuery.select).toHaveBeenCalledWith(
-      "individualId",
+      "pushpayIndividualId",
       "firstName",
       "lastName",
       "pledge",
@@ -177,12 +180,14 @@ describe("loadMappingData", () => {
     );
   });
 
-  it("should order by individualId", async () => {
+  it("should order by pushpayIndividualId", async () => {
     mockMembersQuery.get.mockResolvedValueOnce(createMockSnapshot([]));
 
     await loadMappingData(mockFirebaseAdmin);
 
-    expect(mockMembersQuery.orderBy).toHaveBeenCalledWith("individualId");
+    expect(mockMembersQuery.orderBy).toHaveBeenCalledWith(
+      "pushpayIndividualId",
+    );
   });
 
   it("should limit batch size to 100", async () => {
@@ -201,12 +206,12 @@ describe("loadMappingData", () => {
     expect(result).toEqual({});
   });
 
-  it("should skip members without individualId", async () => {
+  it("should skip members without pushpayIndividualId", async () => {
     mockMembersQuery.get
       .mockResolvedValueOnce(
         createMockSnapshot([
-          createMockDoc({ individualId: "" }, "doc-1"),
-          createMockDoc({ individualId: "person-1" }, "doc-2"),
+          createMockDoc({ pushpayIndividualId: "" }, "doc-1"),
+          createMockDoc({ pushpayIndividualId: "person-1" }, "doc-2"),
         ]),
       )
       .mockResolvedValueOnce(createMockSnapshot([]));
