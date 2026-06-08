@@ -112,6 +112,9 @@ pnpm test:coverage
 
 # Run tests in watch mode
 pnpm test:watch
+
+# Run integration tests (requires Java for Firebase Emulators)
+pnpm test:integration
 ```
 
 Testing thresholds are configured in `vitest.config.ts`:

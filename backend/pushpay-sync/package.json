@@ -8,9 +8,10 @@
     "sync-giving": "tsx src/run-sync-giving.ts",
     "calculate-summaries": "tsx src/run-calculate-summaries.ts",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
+    "test": "vitest run src/",
+    "test:integration": "cd ../../ && npx firebase emulators:exec --only firestore,auth --project demo-test 'cd backend/pushpay-sync && vitest run -c vitest.integration.config.ts'",
     "test:watch": "vitest --watch",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run src/ --coverage"
   },
   "dependencies": {
     "dotenv": "17.4.2",
@@ -18,6 +19,7 @@
     "firebase-admin": "13.10.0"
   },
   "devDependencies": {
+    "nock": "14.0.15",
     "tsx": "4.22.4"
   }
 }

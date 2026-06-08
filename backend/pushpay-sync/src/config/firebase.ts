@@ -10,6 +10,7 @@ export class FirebaseAdmin {
       credential: admin.credential.applicationDefault(),
       projectId: firebaseProjectId,
     });
+    this.adminApp.firestore().settings({ ignoreUndefinedProperties: true });
   }
 
   firestore() {
