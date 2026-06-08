@@ -258,7 +258,7 @@ describe("syncMembers service", () => {
     expect(console.log).toHaveBeenCalledWith("Total pledge:", 100);
   });
 
-  it("syncMembers should orchestrate the group sync with monitoring", async () => {
+  it("syncMembers should orchestrate the group sync with monitoring and takeaway processing", async () => {
     // Ensure consistent behavior across local and CI environments
     delete process.env.GITHUB_ACTIONS;
 
@@ -266,18 +266,32 @@ describe("syncMembers service", () => {
     const getMockInstance = (syncMonitorMock as SyncMonitorMock)
       .getMockInstance;
 
+    // First call (active members)
+    mockedFetchPushpayChms.mockResolvedValueOnce("<xml/>");
+    mockedParseIndividuals.mockReturnValueOnce([
+      { id: "active-1", first_name: "Active" } as unknown as PushpayIndividual,
+    ]);
+
+    // Takeaways
     mockedFetchPushpayChms.mockResolvedValue("<xml/>");
-    mockedParseIndividuals.mockReturnValue([]);
+    mockedParseIndividuals.mockReturnValue([
+      {
+        id: "takeaway-1",
+        first_name: "Takeaway",
+      } as unknown as PushpayIndividual,
+    ]);
 
     await syncMembers(firebaseAdmin);
 
     const monitorInstance = getMockInstance();
     expect(monitorInstance.start).toHaveBeenCalledWith("manual");
-    expect(monitorInstance.recordMembersProcessed).toHaveBeenCalledWith(0);
     expect(monitorInstance.complete).toHaveBeenCalled();
     // 5 processGroup calls: 2 (active), 40-43 (takeaways to delete)
     expect(mockedFetchPushpayChms).toHaveBeenCalledTimes(5);
     expect(mockedFetchPushpayChms).toHaveBeenCalledWith(2);
+
+    // It should hit deleteMembers with the takeaways
+    expect(mockedCommitInChunks).toHaveBeenCalled();
   });
 
   it("syncMembers should handle errors and fail monitoring", async () => {
@@ -300,6 +314,81 @@ describe("syncMembers service", () => {
 
     expect(mockedCommitInChunks).not.toHaveBeenCalled();
     expect(console.log).toHaveBeenCalledWith("No members found");
+  });
+
+  it("should only process individuals modified in last 24h when syncType is only-modified", async () => {
+    const { getEnvironment } = await import("../../env.js");
+    type Environment = ReturnType<typeof getEnvironment>;
+    vi.mocked(getEnvironment).mockReturnValue({
+      tenantId: "test-tenant",
+      pushpayRateLimitMs: 0,
+      syncType: "only-modified",
+    } as Environment);
+
+    const recentDate = new Date().toISOString();
+    const oldDate = "2020-01-01T00:00:00Z";
+
+    const mockIndividuals = [
+      { id: "recent", modified: recentDate },
+      { id: "old", modified: oldDate },
+    ] as PushpayIndividual[];
+
+    const result = await processIndividuals(
+      firebaseAdmin,
+      mockIndividuals,
+      undefined,
+      undefined,
+      "only-modified",
+    );
+
+    expect(result.docs).toHaveLength(1);
+    expect(result.docs[0].data.pushpayIndividualId).toBe("recent");
+    expect(result.filteredCount).toBe(1);
+
+    vi.mocked(getEnvironment).mockReturnValue({
+      tenantId: "test-tenant",
+    } as Environment);
+  });
+
+  it("should perform Safe Auto-Match using pushpayIndividualId or email/name", async () => {
+    const mockMembersByPushpayId = new Map([["pushpay-existing", "doc-1"]]);
+    const mockMembersByMatchKey = new Map([
+      ["jane.doe@example.com|jane|doe", "doc-2"],
+    ]);
+
+    const mockIndividuals = [
+      { id: "pushpay-existing", first_name: "John", last_name: "Doe" },
+      {
+        id: "new-id",
+        first_name: "Jane",
+        last_name: "Doe",
+        email: "jane.doe@example.com",
+      },
+      {
+        id: "brand-new",
+        first_name: "Bob",
+        last_name: "Smith",
+        email: "bob@example.com",
+      },
+    ] as PushpayIndividual[];
+
+    const result = await processIndividuals(
+      firebaseAdmin,
+      mockIndividuals,
+      undefined,
+      undefined,
+      undefined,
+      mockMembersByPushpayId,
+      mockMembersByMatchKey,
+    );
+
+    expect(result.docs).toHaveLength(3);
+    // John matched by Pushpay ID
+    expect(result.docs[0].id).toBe("doc-1");
+    // Jane matched by Name/Email
+    expect(result.docs[1].id).toBe("doc-2");
+    // Bob gets new ID
+    expect(result.docs[2].id).toBe("mock-generated-id");
   });
 
   it("should correctly map super regions based on region selection", async () => {

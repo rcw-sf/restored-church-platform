@@ -23,10 +23,13 @@ import {
   PushpayTextField,
   PushpayPulldownField,
 } from "../types/pushpay.js";
-import { saveMemberDataToCache } from "../utils/cache.js";
+import { loadCachedMemberData, saveMemberDataToCache } from "../utils/cache.js";
 import { parseDateToISO } from "../utils/date-utils.js";
 import { commitInChunks } from "../utils/firestore-batch.js";
-import { saveMemberDataToGitHubCache } from "../utils/github-cache.js";
+import {
+  loadGitHubCacheMemberData,
+  saveMemberDataToGitHubCache,
+} from "../utils/github-cache.js";
 import { sleep } from "../utils/sleep.js";
 import { SyncMonitor } from "../utils/sync-monitor.js";
 
@@ -48,12 +51,39 @@ export async function syncMembers(firebaseAdmin: FirebaseAdmin) {
   );
 
   try {
+    console.log("Fetching existing members for Safe Auto-Match...");
+    const membersRef = firebaseAdmin
+      .firestore()
+      .collection("tenants")
+      .doc(tenantId)
+      .collection("members");
+    const existingMembersSnapshot = await membersRef.get();
+
+    const membersByPushpayId = new Map<string, string>();
+    const membersByMatchKey = new Map<string, string>();
+
+    existingMembersSnapshot.forEach((docSnap) => {
+      const data = docSnap.data() as MemberDoc;
+      if (data.pushpayIndividualId) {
+        membersByPushpayId.set(data.pushpayIndividualId, docSnap.id);
+      }
+      if (data.email && data.firstName && data.lastName) {
+        const matchKey = `${data.email.toLowerCase().trim()}|${data.firstName.toLowerCase().trim()}|${data.lastName.toLowerCase().trim()}`;
+        membersByMatchKey.set(matchKey, docSnap.id);
+      }
+    });
+    console.log(
+      `Loaded ${existingMembersSnapshot.size} existing members for matching.`,
+    );
+
     const result = await processGroup(
       firebaseAdmin,
       2,
       undefined,
       monitor,
       syncType,
+      membersByPushpayId,
+      membersByMatchKey,
     );
 
     await sleep(pushpayRateLimitMs);
@@ -67,6 +97,8 @@ export async function syncMembers(firebaseAdmin: FirebaseAdmin) {
       "Fallaway",
       monitor,
       syncType,
+      membersByPushpayId,
+      membersByMatchKey,
     );
     membersToDelete.push(...fallaways.individuals);
 
@@ -78,6 +110,8 @@ export async function syncMembers(firebaseAdmin: FirebaseAdmin) {
       "Walkaway",
       monitor,
       syncType,
+      membersByPushpayId,
+      membersByMatchKey,
     );
     membersToDelete.push(...walkaways.individuals);
 
@@ -89,6 +123,8 @@ export async function syncMembers(firebaseAdmin: FirebaseAdmin) {
       "Transfer",
       monitor,
       syncType,
+      membersByPushpayId,
+      membersByMatchKey,
     );
     membersToDelete.push(...transfers.individuals);
 
@@ -100,22 +136,29 @@ export async function syncMembers(firebaseAdmin: FirebaseAdmin) {
       "Glory",
       monitor,
       syncType,
+      membersByPushpayId,
+      membersByMatchKey,
     );
     membersToDelete.push(...glory.individuals);
 
     // Delete all takeaway members at once
-    await deleteMembers(firebaseAdmin, membersToDelete, monitor);
+    await deleteMembers(
+      firebaseAdmin,
+      membersToDelete,
+      monitor,
+      membersByPushpayId,
+    );
 
     // Update cache after member sync completes using existing MemberDoc objects
-    await updateMemberCache(result.memberDocs);
+    const allMembers = await updateMemberCache(result.memberDocs);
 
     // Record metrics - include both active members processed and takeaway members deleted
     const totalMembersAffected =
       result.memberDocs.length + membersToDelete.length;
     monitor.recordMembersProcessed(totalMembersAffected);
 
-    // Calculate and store member statistics
-    await saveMemberStatistics(firebaseAdmin, result.memberDocs, monitor);
+    // Calculate and store member statistics using the full unique list from cache
+    await saveMemberStatistics(firebaseAdmin, allMembers, monitor);
 
     await monitor.complete();
   } catch (error) {
@@ -128,6 +171,7 @@ async function deleteMembers(
   firebaseAdmin: FirebaseAdmin,
   individuals: PushpayIndividual[],
   monitor: SyncMonitor,
+  membersByPushpayId?: Map<string, string>,
 ) {
   const env = getEnvironment();
 
@@ -144,19 +188,22 @@ async function deleteMembers(
     .doc(env.tenantId)
     .collection("members");
 
-  const existingMembersSnapshot = await membersRef.get();
-  const membersByPushpayId = new Map<string, string>();
+  let safeMembersByPushpayId = membersByPushpayId;
 
-  existingMembersSnapshot.forEach((doc) => {
-    const data = doc.data();
-    if (data.pushpayIndividualId) {
-      membersByPushpayId.set(data.pushpayIndividualId, doc.id);
-    }
-  });
+  if (!safeMembersByPushpayId) {
+    const existingMembersSnapshot = await membersRef.get();
+    safeMembersByPushpayId = new Map<string, string>();
+    existingMembersSnapshot.forEach((doc) => {
+      const data = doc.data();
+      if (data.pushpayIndividualId) {
+        safeMembersByPushpayId!.set(data.pushpayIndividualId, doc.id);
+      }
+    });
+  }
 
   const itemsToDelete: { id: string }[] = [];
   for (const individual of individuals) {
-    const firestoreDocId = membersByPushpayId.get(individual.id);
+    const firestoreDocId = safeMembersByPushpayId.get(individual.id);
     if (firestoreDocId) {
       itemsToDelete.push({ id: firestoreDocId });
     }
@@ -182,6 +229,8 @@ export async function processGroup(
   takeawayType?: string,
   monitor?: SyncMonitor,
   syncType?: string,
+  membersByPushpayId?: Map<string, string>,
+  membersByMatchKey?: Map<string, string>,
 ): Promise<{ individuals: PushpayIndividual[]; memberDocs: MemberDoc[] }> {
   const response = await fetchPushpayChms(id);
   const individuals = parseIndividuals(response);
@@ -192,6 +241,8 @@ export async function processGroup(
     takeawayType,
     monitor,
     syncType,
+    membersByPushpayId,
+    membersByMatchKey,
   );
 
   return { individuals, memberDocs: result.memberDocs };
@@ -203,6 +254,8 @@ export async function processIndividuals(
   takeawayType?: string,
   monitor?: SyncMonitor,
   syncType?: string,
+  membersByPushpayId?: Map<string, string>,
+  membersByMatchKey?: Map<string, string>,
 ): Promise<{
   docs: { id: string; data: MemberDoc }[];
   memberDocs: MemberDoc[];
@@ -248,30 +301,35 @@ export async function processIndividuals(
 
   let changedCount = 0;
 
-  console.log("Fetching existing members for Safe Auto-Match...");
   const membersRef = firebaseAdmin
     .firestore()
     .collection("tenants")
     .doc(env.tenantId)
     .collection("members");
-  const existingMembersSnapshot = await membersRef.get();
 
-  const membersByPushpayId = new Map<string, string>();
-  const membersByMatchKey = new Map<string, string>();
+  let safeMembersByPushpayId = membersByPushpayId;
+  let safeMembersByMatchKey = membersByMatchKey;
 
-  existingMembersSnapshot.forEach((docSnap) => {
-    const data = docSnap.data() as MemberDoc;
-    if (data.pushpayIndividualId) {
-      membersByPushpayId.set(data.pushpayIndividualId, docSnap.id);
-    }
-    if (data.email && data.firstName && data.lastName) {
-      const matchKey = `${data.email.toLowerCase().trim()}|${data.firstName.toLowerCase().trim()}|${data.lastName.toLowerCase().trim()}`;
-      membersByMatchKey.set(matchKey, docSnap.id);
-    }
-  });
-  console.log(
-    `Loaded ${existingMembersSnapshot.size} existing members for matching.`,
-  );
+  if (!safeMembersByPushpayId || !safeMembersByMatchKey) {
+    console.log("Fetching existing members for Safe Auto-Match (fallback)...");
+    const existingMembersSnapshot = await membersRef.get();
+    safeMembersByPushpayId = new Map<string, string>();
+    safeMembersByMatchKey = new Map<string, string>();
+
+    existingMembersSnapshot.forEach((docSnap) => {
+      const data = docSnap.data() as MemberDoc;
+      if (data.pushpayIndividualId) {
+        safeMembersByPushpayId!.set(data.pushpayIndividualId, docSnap.id);
+      }
+      if (data.email && data.firstName && data.lastName) {
+        const matchKey = `${data.email.toLowerCase().trim()}|${data.firstName.toLowerCase().trim()}|${data.lastName.toLowerCase().trim()}`;
+        safeMembersByMatchKey!.set(matchKey, docSnap.id);
+      }
+    });
+    console.log(
+      `Loaded ${existingMembersSnapshot.size} existing members for matching.`,
+    );
+  }
 
   for (const individual of filteredIndividuals) {
     // Normalize XML arrays (parser returns single object instead of array for one element)
@@ -305,7 +363,7 @@ export async function processIndividuals(
       "Pushpay Spouse Community Member Key",
     );
 
-    let firestoreDocId = membersByPushpayId.get(individual.id);
+    let firestoreDocId = safeMembersByPushpayId.get(individual.id);
 
     if (
       !firestoreDocId &&
@@ -314,7 +372,7 @@ export async function processIndividuals(
       individual.last_name
     ) {
       const matchKey = `${individual.email.toLowerCase().trim()}|${individual.first_name.toLowerCase().trim()}|${individual.last_name.toLowerCase().trim()}`;
-      firestoreDocId = membersByMatchKey.get(matchKey);
+      firestoreDocId = safeMembersByMatchKey.get(matchKey);
       if (firestoreDocId) {
         console.log(
           `Safe Auto-Match successful for ${individual.first_name} ${individual.last_name} (${individual.email})`,
@@ -419,10 +477,14 @@ async function updateMemberCache(memberDocs: MemberDoc[]) {
   try {
     console.log("🔄 Updating member cache after sync...");
 
-    // Create member lookup from existing MemberDoc objects (no Firestore read!)
-    const memberLookup: MemberLookup = {};
+    // Load existing cache to prevent overwriting during only-modified syncs
+    const memberLookup: MemberLookup =
+      loadGitHubCacheMemberData() || loadCachedMemberData() || {};
+
+    let newOrUpdatedCount = 0;
 
     for (const memberDoc of memberDocs) {
+      newOrUpdatedCount++;
       // Add to lookup with pushpayIndividualId
       memberLookup[memberDoc.pushpayIndividualId] = memberDoc;
 
@@ -441,10 +503,20 @@ async function updateMemberCache(memberDocs: MemberDoc[]) {
     saveMemberDataToGitHubCache(memberLookup, today);
 
     console.log(
-      `✅ Updated cache with ${Object.keys(memberLookup).length} members (no Firestore reads!)`,
+      `✅ Updated cache with ${newOrUpdatedCount} modified members. Total members in cache: ${Object.keys(memberLookup).length} (no Firestore reads!)`,
     );
+
+    // Return unique members for statistics calculation (filter out community key duplicates)
+    const uniqueMembers = new Map<string, MemberDoc>();
+    for (const member of Object.values(memberLookup)) {
+      if (member.pushpayIndividualId) {
+        uniqueMembers.set(member.pushpayIndividualId, member);
+      }
+    }
+    return Array.from(uniqueMembers.values());
   } catch (error) {
     console.warn("⚠️ Failed to update member cache:", error);
+    return memberDocs; // Fallback to just modified members on error
   }
 }
 

@@ -36,3 +36,7 @@ lerna-debug.log*
 .pnpm-store
 
 **/.cache/
+
+# Test debug output files
+test-db-state-*.json
+test-output-*.json

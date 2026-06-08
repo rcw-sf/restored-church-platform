@@ -107,11 +107,12 @@ pnpm pushpay-sync:calculate-summaries
 The project includes comprehensive test suites for all applications:
 
 - **Run all tests**: `pnpm test` (Runs frontend, backend, and Firestore rules tests recursively)
-- **Rules unit tests**: `pnpm --filter @repo/rules test` (Runs security rules assertions locally)
+- **Rules unit tests**: `pnpm test:rules` (Runs security rules assertions locally)
 - **Watch mode (Admin)**: `pnpm test:admin:watch`
 - **Watch mode (Deposit Counter)**: `pnpm test:deposit-counter:watch`
-- **Coverage Report**: `pnpm test:coverage`
+- **Coverage report**: `pnpm test:coverage`
 - **Backend tests**: `pnpm test:pushpay-sync`
+- **Integration tests**: `pnpm test:integration`
 
 ### Deployment
 
