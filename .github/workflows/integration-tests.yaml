@@ -4,6 +4,8 @@ name: Integration Tests
 on:
   push:
     branches: [main]
+    paths:
+      - "backend/pushpay-sync/**"
 
 jobs:
   integration-tests:

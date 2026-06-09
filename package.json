@@ -29,6 +29,7 @@
     "test:deposit-counter:watch": "pnpm  --filter deposit-counter test:watch",
     "test:admin:watch": "pnpm --filter admin test:watch",
     "test:pushpay-sync:watch": "pnpm --recursive test:watch",
+    "test:pushpay-sync:integration": "pnpm --filter pushpay-sync test:integration",
     "test:coverage": "pnpm --recursive --no-bail test:coverage",
     "test:integration": "pnpm --recursive --no:bail test:integration"
   },
