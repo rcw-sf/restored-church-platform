@@ -47,16 +47,3 @@ export const getLocalIsoDate = (baseDate: Date = new Date()) => {
     "yyyy-MM-dd",
   );
 };
-
-export const removeUndefinedFields = <T extends Record<string, unknown>>(
-  obj: T,
-): Partial<T> => {
-  const newObj: Partial<T> = {};
-  Object.keys(obj).forEach((key) => {
-    const typedKey = key as keyof T;
-    if (obj[typedKey] !== undefined) {
-      newObj[typedKey] = obj[typedKey];
-    }
-  });
-  return newObj;
-};
