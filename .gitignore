@@ -40,3 +40,9 @@ lerna-debug.log*
 # Test debug output files
 test-db-state-*.json
 test-output-*.json
+
+# TypeScript build artifacts
+*.tsbuildinfo
+.tsbuildinfo
+tsconfig.tsbuildinfo
+tsconfig.*.tsbuildinfo
