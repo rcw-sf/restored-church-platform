@@ -152,8 +152,8 @@ The service includes GitHub Actions workflows for automated execution:
 
 - `tenants/{tenantId}/members`: Member documents with profile data, pledge, and region
 - `tenants/{tenantId}/member_statistics/current`: Aggregated member statistics
-- `tenants/{tenantId}/member_giving/{date}_{individualId}`: Weekly giving aggregates per member
-- `tenants/{tenantId}/non_member_giving/{date}_{individualId}`: Weekly giving aggregates for non-members
+- `tenants/{tenantId}/member_giving/{date}_{pushpayIndividualId}`: Weekly giving aggregates per member
+- `tenants/{tenantId}/non_member_giving/{date}_{pushpayIndividualId}`: Weekly giving aggregates for non-members
 - `tenants/{tenantId}/weekly_giving_summary/{sundayDate}`: Weekly summary statistics
 - `tenants/{tenantId}/sync_state/{syncId}`: Sync operation state and metrics
 - `tenants/{tenantId}/daily_usage/{date}`: Daily Firestore usage tracking

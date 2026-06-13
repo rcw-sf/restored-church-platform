@@ -31,7 +31,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await testEnv.cleanup();
+  await testEnv?.cleanup();
 });
 
 beforeEach(async () => {
@@ -182,7 +182,7 @@ describe("Firestore Security Rules", () => {
 
       await assertSucceeds(
         setDoc(memberRef, {
-          individualId: "member-456",
+          pushpayIndividualId: "member-456",
           firstName: "Alice",
           lastName: "Smith",
           tenantId: TENANT_ID,
