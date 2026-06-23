@@ -41,7 +41,7 @@ export default function MembersMobileTable({
                 <a
                   href={`mailto:${member.email}`}
                   onClick={(e) => e.stopPropagation()}
-                  className="text-primary hover:underline block"
+                  className="text-primary hover:underline block w-fit"
                 >
                   {member.email}
                 </a>
@@ -50,7 +50,7 @@ export default function MembersMobileTable({
                 <a
                   href={`tel:${member.phone}`}
                   onClick={(e) => e.stopPropagation()}
-                  className="opacity-70 hover:underline block"
+                  className="opacity-70 hover:underline block w-fit"
                 >
                   {member.phone}
                 </a>

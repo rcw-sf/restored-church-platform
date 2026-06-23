@@ -60,9 +60,26 @@ describe("PendingMembersList", () => {
     expect(
       screen.queryByTestId("pending-loading-spinner"),
     ).not.toBeInTheDocument();
-    expect(screen.getByText("No Pending Approvals")).toBeInTheDocument();
+    expect(screen.getByText("No Requests Found")).toBeInTheDocument();
     expect(
-      screen.getByText("There are no new member requests waiting for review."),
+      screen.getByText("There are no member requests for the selected status."),
+    ).toBeInTheDocument();
+  });
+
+  it("renders empty state correctly for 'all' status", () => {
+    render(
+      <PendingMembersList
+        pendingMembers={[]}
+        loading={false}
+        role="admin"
+        onApprove={mockOnApprove}
+        onReject={mockOnReject}
+      />,
+    );
+
+    expect(screen.getByText("No Requests Found")).toBeInTheDocument();
+    expect(
+      screen.getByText("There are no member requests for the selected status."),
     ).toBeInTheDocument();
   });
 
@@ -170,6 +187,48 @@ describe("PendingMembersList", () => {
         onReject={mockOnReject}
         onEdit={vi.fn()}
         currentUserEmail="another_editor@test.com"
+      />,
+    );
+
+    expect(screen.queryByTestId("edit-button")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("reject-button")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("approve-button")).not.toBeInTheDocument();
+  });
+
+  it("hides action buttons if the request is approved", () => {
+    const approvedMember = {
+      ...mockPendingMembers[0],
+      status: "approved" as const,
+    };
+    render(
+      <PendingMembersList
+        pendingMembers={[approvedMember]}
+        loading={false}
+        role="admin"
+        onApprove={mockOnApprove}
+        onReject={mockOnReject}
+        onEdit={vi.fn()}
+      />,
+    );
+
+    expect(screen.queryByTestId("edit-button")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("reject-button")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("approve-button")).not.toBeInTheDocument();
+  });
+
+  it("hides action buttons if the request is rejected", () => {
+    const rejectedMember = {
+      ...mockPendingMembers[0],
+      status: "rejected" as const,
+    };
+    render(
+      <PendingMembersList
+        pendingMembers={[rejectedMember]}
+        loading={false}
+        role="admin"
+        onApprove={mockOnApprove}
+        onReject={mockOnReject}
+        onEdit={vi.fn()}
       />,
     );
 
