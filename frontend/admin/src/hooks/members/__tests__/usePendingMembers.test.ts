@@ -396,11 +396,21 @@ describe("usePendingMembers", () => {
     // Initial render should query with "pending"
     expect(where).toHaveBeenCalledWith("status", "==", "pending");
 
+    vi.clearAllMocks();
+
     act(() => {
       result.current.setPendingStatus("approved");
     });
 
-    // Changing state should re-run the effect and query with "approved"
-    expect(where).toHaveBeenLastCalledWith("status", "==", "approved");
+    // Changing state should re-run the effect and query with "approved" and "updatedAt"
+    expect(where).toHaveBeenCalledWith("status", "==", "approved");
+    expect(where).toHaveBeenCalledWith("updatedAt", ">=", expect.any(String));
+
+    act(() => {
+      result.current.setPendingStatus("rejected");
+    });
+
+    expect(where).toHaveBeenCalledWith("status", "==", "rejected");
+    expect(where).toHaveBeenCalledWith("updatedAt", ">=", expect.any(String));
   });
 });

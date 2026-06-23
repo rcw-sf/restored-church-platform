@@ -90,7 +90,7 @@ service cloud.firestore {
     }
 
     // A superAdmin cannot downgrade their own role (prevents lockout)
-    function notDowngradingOwnRole(tenantId, email) {
+    function notDowngradingOwnRole(email) {
       return !(request.auth.token.email.lower() == email.lower() &&
                resource.data.role == 'superAdmin' &&
                request.resource.data.role != 'superAdmin');
@@ -118,7 +118,7 @@ service cloud.firestore {
       allow update: if isSuperAdmin(tenantId) &&
                        isValidAdminDoc() &&
                        adminImmutableFieldsUnchanged() &&
-                       notDowngradingOwnRole(tenantId, email);
+                       notDowngradingOwnRole(email);
 
       // Only superAdmins can revoke access.
       // A superAdmin cannot delete their own doc (prevents full lockout).
@@ -132,7 +132,8 @@ service cloud.firestore {
         'firstName', 'lastName', 'email', 'phone', 'gender', 'birthdate', 
         'baptizedDate', 'type', 'pledge', 'region', 'superRegion', 'ministry', 
         'membershipStartDate', 'requestType', 'status', 'createdAt', 'updatedAt', 
-        'createdBy', 'targetMemberId', 'tenantId'
+        'createdBy', 'targetMemberId', 'tenantId',
+        'pushpayIndividualId', 'pushpayCommunityMemberKey', 'pushpaySpouseCommunityMemberKey'
       ];
       let requiredKeys = ['firstName', 'lastName', 'status', 'requestType', 'createdAt', 'createdBy'];
       
@@ -160,7 +161,10 @@ service cloud.firestore {
              (!('membershipStartDate' in d) || (d.membershipStartDate is string && d.membershipStartDate.size() <= 15)) &&
              (!('membershipStopDate' in d) || (d.membershipStopDate is string && d.membershipStopDate.size() <= 15)) &&
              (!('updatedAt' in d) || (d.updatedAt is string && d.updatedAt.size() <= 30)) &&
-             (!('targetMemberId' in d) || (d.targetMemberId is string && d.targetMemberId.size() <= 128));
+             (!('targetMemberId' in d) || (d.targetMemberId is string && d.targetMemberId.size() <= 128)) &&
+             (!('pushpayIndividualId' in d) || (d.pushpayIndividualId is string && d.pushpayIndividualId.size() <= 128)) &&
+             (!('pushpayCommunityMemberKey' in d) || (d.pushpayCommunityMemberKey is string && d.pushpayCommunityMemberKey.size() <= 128)) &&
+             (!('pushpaySpouseCommunityMemberKey' in d) || (d.pushpaySpouseCommunityMemberKey is string && d.pushpaySpouseCommunityMemberKey.size() <= 128));
     }
 
     // Checks if an editor is authorized to update their own pending request

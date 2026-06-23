@@ -63,17 +63,6 @@ export default function PendingMembersList({
                   <h3 className="text-lg font-bold text-base-content">
                     {pending.firstName} {pending.lastName}
                   </h3>
-                  <div
-                    className={`badge badge-sm font-semibold ${
-                      pending.status === "approved"
-                        ? "badge-success text-white"
-                        : pending.status === "rejected"
-                          ? "badge-error text-white"
-                          : "badge-warning"
-                    }`}
-                  >
-                    {pending.status.toUpperCase()}
-                  </div>
                 </div>
                 <span className="badge badge-sm badge-secondary badge-outline mt-1 font-semibold">
                   {pending.type || "New Addition"}
