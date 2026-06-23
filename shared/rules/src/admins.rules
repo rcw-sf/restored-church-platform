@@ -21,7 +21,7 @@
     }
 
     // A superAdmin cannot downgrade their own role (prevents lockout)
-    function notDowngradingOwnRole(tenantId, email) {
+    function notDowngradingOwnRole(email) {
       return !(request.auth.token.email.lower() == email.lower() &&
                resource.data.role == 'superAdmin' &&
                request.resource.data.role != 'superAdmin');
@@ -49,7 +49,7 @@
       allow update: if isSuperAdmin(tenantId) &&
                        isValidAdminDoc() &&
                        adminImmutableFieldsUnchanged() &&
-                       notDowngradingOwnRole(tenantId, email);
+                       notDowngradingOwnRole(email);
 
       // Only superAdmins can revoke access.
       // A superAdmin cannot delete their own doc (prevents full lockout).

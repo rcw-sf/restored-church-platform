@@ -11,10 +11,8 @@ type PendingFiltersType = Omit<
 };
 
 interface PendingMembersTabProps {
-  pendingStatus: "pending" | "approved" | "rejected" | "all";
-  setPendingStatus: (
-    status: "pending" | "approved" | "rejected" | "all",
-  ) => void;
+  pendingStatus: "pending" | "approved" | "rejected";
+  setPendingStatus: (status: "pending" | "approved" | "rejected") => void;
   pendingFilters: PendingFiltersType;
   pendingLoading: boolean;
   role: string | null;
@@ -42,21 +40,19 @@ export default function PendingMembersTab({
           Status Filter:
         </span>
         <div className="join bg-base-200/50 p-1 rounded-lg">
-          {(["pending", "approved", "rejected", "all"] as const).map(
-            (status) => (
-              <button
-                key={status}
-                className={`join-item btn btn-sm font-semibold capitalize border-none hover:bg-base-100 transition-all ${
-                  pendingStatus === status
-                    ? "bg-base-100 shadow-sm text-primary"
-                    : "bg-transparent text-base-content/75"
-                }`}
-                onClick={() => setPendingStatus(status)}
-              >
-                {status}
-              </button>
-            ),
-          )}
+          {(["pending", "approved", "rejected"] as const).map((status) => (
+            <button
+              key={status}
+              className={`join-item btn btn-sm font-semibold capitalize border-none hover:bg-base-100 transition-all ${
+                pendingStatus === status
+                  ? "bg-base-100 shadow-sm text-primary"
+                  : "bg-transparent text-base-content/75"
+              }`}
+              onClick={() => setPendingStatus(status)}
+            >
+              {status}
+            </button>
+          ))}
         </div>
       </div>
       <MembersFilterBar
@@ -73,6 +69,11 @@ export default function PendingMembersTab({
         ministryOptions={pendingFilters.ministryOptions}
         onResetFilters={pendingFilters.resetFilters}
       />
+      {pendingStatus !== "pending" && (
+        <div className="text-sm opacity-60 italic -mt-2">
+          Showing items updated in the last 30 days.
+        </div>
+      )}
       <PendingMembersList
         pendingMembers={pendingFilters.filteredMembers}
         loading={pendingLoading}

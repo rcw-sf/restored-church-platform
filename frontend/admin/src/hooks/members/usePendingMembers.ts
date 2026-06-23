@@ -16,6 +16,7 @@ import {
   query,
   where,
 } from "firebase/firestore";
+import { DateTime } from "luxon";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 
@@ -37,6 +38,9 @@ export interface PendingMemberDoc {
   requestType: "create" | "update" | "remove";
   status: "pending" | "approved" | "rejected";
   targetMemberId?: string;
+  pushpayIndividualId?: string;
+  pushpayCommunityMemberKey?: string;
+  pushpaySpouseCommunityMemberKey?: string;
   createdAt: string;
   updatedAt: string;
   createdBy: string;
@@ -46,6 +50,7 @@ export function usePendingMembers() {
   const [pendingMembers, setPendingMembers] = useState<PendingMemberDoc[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [pendingCount, setPendingCount] = useState<number>(0);
   const [pendingStatus, setPendingStatus] = useState<
     "pending" | "approved" | "rejected"
   >("pending");
@@ -59,7 +64,17 @@ export function usePendingMembers() {
     }
 
     const collRef = collection(db, "tenants", tenantId, "pending_members");
-    const q = query(collRef, where("status", "==", pendingStatus));
+    let q;
+    if (pendingStatus === "pending") {
+      q = query(collRef, where("status", "==", "pending"));
+    } else {
+      const thirtyDaysAgo = DateTime.utc().minus({ days: 30 }).toISO();
+      q = query(
+        collRef,
+        where("status", "==", pendingStatus),
+        where("updatedAt", ">=", thirtyDaysAgo),
+      );
+    }
 
     const unsubscribe = onSnapshot(
       q,
@@ -82,6 +97,9 @@ export function usePendingMembers() {
         });
 
         setPendingMembers(list);
+        if (pendingStatus === "pending") {
+          setPendingCount(list.length);
+        }
         setLoading(false);
       },
       (err) => {
@@ -126,6 +144,11 @@ export function usePendingMembers() {
         ministry: pendingMember.ministry || "",
         membershipStartDate:
           pendingMember.membershipStartDate || getLocalIsoDate(),
+        pushpayIndividualId: pendingMember.pushpayIndividualId || undefined,
+        pushpayCommunityMemberKey:
+          pendingMember.pushpayCommunityMemberKey || undefined,
+        pushpaySpouseCommunityMemberKey:
+          pendingMember.pushpaySpouseCommunityMemberKey || undefined,
         updatedAt: new Date().toISOString(),
       };
       batch.update(memberDocRef, updatedMemberData);
@@ -150,6 +173,11 @@ export function usePendingMembers() {
         ministry: pendingMember.ministry || "",
         membershipStartDate:
           pendingMember.membershipStartDate || getLocalIsoDate(),
+        pushpayIndividualId: pendingMember.pushpayIndividualId || undefined,
+        pushpayCommunityMemberKey:
+          pendingMember.pushpayCommunityMemberKey || undefined,
+        pushpaySpouseCommunityMemberKey:
+          pendingMember.pushpaySpouseCommunityMemberKey || undefined,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         tenantId,
@@ -211,10 +239,12 @@ export function usePendingMembers() {
 
   return {
     pendingMembers,
+    pendingCount,
     loading,
     error,
     approveMember,
     rejectMember,
+    pendingStatus,
     setPendingStatus,
   };
 }
