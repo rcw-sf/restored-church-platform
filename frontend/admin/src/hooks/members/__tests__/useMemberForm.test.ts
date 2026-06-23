@@ -60,6 +60,9 @@ describe("useMemberForm", () => {
     region: "San Francisco" as const,
     superRegion: "Peninsula" as const,
     ministry: "Campus" as const,
+    pushpayIndividualId: "1241",
+    pushpayCommunityMemberKey: "pp-id-123",
+    pushpaySpouseCommunityMemberKey: "pp-spouse-123",
   };
 
   it("submits creation request to pending_members for editor", async () => {
@@ -83,6 +86,9 @@ describe("useMemberForm", () => {
         requestType: "create",
         status: "pending",
         createdBy: "editor@test.com",
+        pushpayIndividualId: "1241",
+        pushpayCommunityMemberKey: "pp-id-123",
+        pushpaySpouseCommunityMemberKey: "pp-spouse-123",
       }),
     );
     expect(result.current.submitting).toBe(false);
@@ -109,6 +115,9 @@ describe("useMemberForm", () => {
       expect.objectContaining({
         firstName: "Charlie",
         lastName: "Brown",
+        pushpayIndividualId: "1241",
+        pushpayCommunityMemberKey: "pp-id-123",
+        pushpaySpouseCommunityMemberKey: "pp-spouse-123",
       }),
     );
     expect(batchSetMock).toHaveBeenCalledWith(
@@ -148,6 +157,9 @@ describe("useMemberForm", () => {
         firstName: "Charlie",
         lastName: "Brown",
         email: "charlie@test.com",
+        pushpayIndividualId: "1241",
+        pushpayCommunityMemberKey: "pp-id-123",
+        pushpaySpouseCommunityMemberKey: "pp-spouse-123",
       }),
     );
     expect(result.current.submitting).toBe(false);
@@ -175,6 +187,9 @@ describe("useMemberForm", () => {
       expect.objectContaining({
         firstName: "Charlie",
         lastName: "Brown",
+        pushpayIndividualId: "1241",
+        pushpayCommunityMemberKey: "pp-id-123",
+        pushpaySpouseCommunityMemberKey: "pp-spouse-123",
       }),
     );
     expect(result.current.submitting).toBe(false);
@@ -204,6 +219,9 @@ describe("useMemberForm", () => {
         status: "pending",
         targetMemberId: "member-123",
         createdBy: "editor@test.com",
+        pushpayIndividualId: "1241",
+        pushpayCommunityMemberKey: "pp-id-123",
+        pushpaySpouseCommunityMemberKey: "pp-spouse-123",
       }),
     );
     expect(result.current.submitting).toBe(false);

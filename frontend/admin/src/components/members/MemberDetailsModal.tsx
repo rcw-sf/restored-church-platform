@@ -5,11 +5,13 @@ import { DateTime } from "luxon";
 interface MemberDetailsModalProps {
   member: MemberDoc | null;
   onClose: () => void;
+  onEdit?: (member: MemberDoc) => void;
 }
 
 export default function MemberDetailsModal({
   member,
   onClose,
+  onEdit,
 }: MemberDetailsModalProps) {
   if (!member) return null;
 
@@ -269,8 +271,22 @@ export default function MemberDetailsModal({
         </div>
 
         {/* Modal Footer */}
-        <div className="bg-base-200/40 p-4 border-t border-base-200 flex justify-end">
-          <button onClick={onClose} className="btn btn-neutral btn-sm">
+        <div className="bg-base-200/40 p-4 border-t border-base-200 flex justify-end gap-2">
+          {onEdit && (
+            <button
+              onClick={() => onEdit(member)}
+              className="btn btn-primary btn-sm"
+              data-testid="details-edit-button"
+              type="button"
+            >
+              Edit Member
+            </button>
+          )}
+          <button
+            onClick={onClose}
+            className="btn btn-neutral btn-sm"
+            type="button"
+          >
             Close
           </button>
         </div>
