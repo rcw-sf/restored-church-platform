@@ -36,9 +36,9 @@ export default function PendingMembersList({
     return (
       <div className="card bg-base-100 border border-base-200 shadow-md p-12 text-center">
         <Users className="w-12 h-12 opacity-30 mx-auto mb-4 text-primary" />
-        <h3 className="text-lg font-bold">No Pending Approvals</h3>
+        <h3 className="text-lg font-bold">No Requests Found</h3>
         <p className="text-sm opacity-60 mt-1">
-          There are no new member requests waiting for review.
+          There are no member requests for the selected status.
         </p>
       </div>
     );
@@ -59,9 +59,22 @@ export default function PendingMembersList({
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start border-b border-base-200 pb-3 gap-3">
               <div>
-                <h3 className="text-lg font-bold text-base-content">
-                  {pending.firstName} {pending.lastName}
-                </h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-bold text-base-content">
+                    {pending.firstName} {pending.lastName}
+                  </h3>
+                  <div
+                    className={`badge badge-sm font-semibold ${
+                      pending.status === "approved"
+                        ? "badge-success text-white"
+                        : pending.status === "rejected"
+                          ? "badge-error text-white"
+                          : "badge-warning"
+                    }`}
+                  >
+                    {pending.status.toUpperCase()}
+                  </div>
+                </div>
                 <span className="badge badge-sm badge-secondary badge-outline mt-1 font-semibold">
                   {pending.type || "New Addition"}
                 </span>
@@ -173,46 +186,47 @@ export default function PendingMembersList({
             </div>
 
             {/* Actions */}
-            {(role === "admin" ||
-              role === "superAdmin" ||
-              (role === "editor" &&
-                currentUserEmail &&
-                pending.createdBy &&
-                pending.createdBy.toLowerCase() ===
-                  currentUserEmail.toLowerCase())) && (
-              <div className="flex flex-row justify-end gap-3 pt-3 border-t border-base-200 mt-2">
-                {onEdit && (
-                  <button
-                    onClick={() => onEdit(pending)}
-                    className="btn btn-outline btn-sm flex-1 sm:flex-initial"
-                    data-testid="edit-button"
-                    type="button"
-                  >
-                    Edit
-                  </button>
-                )}
-                {(role === "admin" || role === "superAdmin") && (
-                  <>
+            {pending.status === "pending" &&
+              (role === "admin" ||
+                role === "superAdmin" ||
+                (role === "editor" &&
+                  currentUserEmail &&
+                  pending.createdBy &&
+                  pending.createdBy.toLowerCase() ===
+                    currentUserEmail.toLowerCase())) && (
+                <div className="flex flex-row justify-end gap-3 pt-3 border-t border-base-200 mt-2">
+                  {onEdit && (
                     <button
-                      onClick={() => onReject(pending)}
-                      className="btn btn-outline btn-error btn-sm flex-1 sm:flex-initial"
-                      data-testid="reject-button"
+                      onClick={() => onEdit(pending)}
+                      className="btn btn-outline btn-sm flex-1 sm:flex-initial"
+                      data-testid="edit-button"
                       type="button"
                     >
-                      Reject
+                      Edit
                     </button>
-                    <button
-                      onClick={() => onApprove(pending)}
-                      className="btn btn-success btn-sm text-white flex-1 sm:flex-initial"
-                      data-testid="approve-button"
-                      type="button"
-                    >
-                      Approve
-                    </button>
-                  </>
-                )}
-              </div>
-            )}
+                  )}
+                  {(role === "admin" || role === "superAdmin") && (
+                    <>
+                      <button
+                        onClick={() => onReject(pending)}
+                        className="btn btn-outline btn-error btn-sm flex-1 sm:flex-initial"
+                        data-testid="reject-button"
+                        type="button"
+                      >
+                        Reject
+                      </button>
+                      <button
+                        onClick={() => onApprove(pending)}
+                        className="btn btn-success btn-sm text-white flex-1 sm:flex-initial"
+                        data-testid="approve-button"
+                        type="button"
+                      >
+                        Approve
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
           </div>
         </div>
       ))}

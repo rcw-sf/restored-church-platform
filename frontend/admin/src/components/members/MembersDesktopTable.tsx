@@ -38,7 +38,7 @@ export default function MembersDesktopTable({
                       <a
                         href={`mailto:${member.email}`}
                         onClick={(e) => e.stopPropagation()}
-                        className="text-primary hover:underline flex items-center gap-1 font-medium"
+                        className="text-primary hover:underline flex w-fit items-center gap-1 font-medium"
                       >
                         {member.email}
                       </a>
@@ -49,7 +49,7 @@ export default function MembersDesktopTable({
                       <a
                         href={`tel:${member.phone}`}
                         onClick={(e) => e.stopPropagation()}
-                        className="opacity-70 hover:underline"
+                        className="opacity-70 hover:underline w-fit inline-block"
                       >
                         {member.phone}
                       </a>
