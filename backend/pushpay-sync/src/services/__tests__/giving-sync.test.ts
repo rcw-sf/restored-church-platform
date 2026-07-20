@@ -162,6 +162,7 @@ describe("giving-sync", () => {
       transactionTtlDays: 30,
       weeklyGivingSummaryTtlDays: 90,
       githubActionCachePath: "/tmp/cache",
+      googleSpreadsheetId: "test-sheet-id",
     };
 
     // Setup mock implementations

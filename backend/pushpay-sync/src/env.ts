@@ -22,6 +22,9 @@ export interface Environment {
   // Tenant
   tenantId: string;
 
+  // Google Sheets
+  googleSpreadsheetId: string;
+
   // Sync configuration
   syncType: "today" | "yesterday" | "weekly" | "all" | "only-modified";
   pushpayRateLimitMs: number;
@@ -70,6 +73,7 @@ export const getEnvironment = (): Environment => {
 
     firebaseProjectId: process.env.FIREBASE_PROJECT_ID || "",
     tenantId: process.env.TENANT_ID || "",
+    googleSpreadsheetId: process.env.GOOGLE_SPREADSHEET_ID || "",
 
     syncType: (process.env.SYNC_TYPE as Environment["syncType"]) || "yesterday",
     pushpayRateLimitMs: parseInt(
