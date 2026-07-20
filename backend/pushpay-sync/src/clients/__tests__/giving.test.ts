@@ -44,6 +44,7 @@ describe("pushpay giving client", () => {
     transactionTtlDays: 30,
     weeklyGivingSummaryTtlDays: 90,
     githubActionCachePath: "/tmp",
+    googleSpreadsheetId: "test-sheet-id",
   };
 
   const mockAccessTokenResponse: PushpayAccessTokenResponse = {

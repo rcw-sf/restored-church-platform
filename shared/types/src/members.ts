@@ -42,6 +42,7 @@ export interface MemberDoc {
   birthdate?: string;
   baptizedDate?: string;
   type?: AdditionType;
+  bibleTalk?: string;
   membershipStartDate?: string;
   membershipStopDate?: string;
   reasonForFallaway?: string;

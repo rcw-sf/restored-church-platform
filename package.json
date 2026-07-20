@@ -10,6 +10,7 @@
     "admin": "firebase emulators:exec --ui --import=./emulator-data 'pnpm --filter admin dev'",
     "admin:prd": "pnpm --filter admin prd",
     "pushpay-sync:members": "pnpm --filter pushpay-sync sync-members",
+    "pushpay-sync:push-integrations": "pnpm --filter pushpay-sync push-integrations",
     "pushpay-sync:giving": "pnpm --filter pushpay-sync sync-giving",
     "pushpay-sync:calculate-summaries": "pnpm --filter pushpay-sync calculate-summaries",
     "build:rules": "pnpm --filter rules build",

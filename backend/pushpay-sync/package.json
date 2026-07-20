@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "sync-members": "tsx src/run-sync-members.ts",
+    "push-integrations": "tsx src/run-push-integrations.ts",
     "sync-giving": "tsx src/run-sync-giving.ts",
     "calculate-summaries": "tsx src/run-calculate-summaries.ts",
     "typecheck": "tsc --noEmit",
@@ -14,9 +15,12 @@
     "test:coverage": "vitest run src/ --coverage"
   },
   "dependencies": {
+    "@repo/types": "workspace:*",
     "dotenv": "17.4.2",
     "fast-xml-parser": "5.8.0",
-    "firebase-admin": "13.10.0"
+    "firebase-admin": "13.10.0",
+    "google-auth-library": "^10.7.0",
+    "googleapis": "^173.0.0"
   },
   "devDependencies": {
     "nock": "14.0.15",
