@@ -1,0 +1,57 @@
+name: Push Integrations
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Integration target: all, pushpay, or sheets"
+        required: false
+        type: choice
+        options:
+          - all
+          - pushpay
+          - sheets
+        default: "all"
+
+jobs:
+  push-integrations:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ secrets.GOOGLE_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GOOGLE_SERVICE_ACCOUNT }}
+
+      - uses: pnpm/action-setup@v5
+        name: Install pnpm
+        with:
+          cache: true
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Setup Google Cloud credentials
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.FIREBASE_PROJECT_ID }}
+
+      - name: Inject .env file
+        run: |
+          cd backend/pushpay-sync
+          printf "%s" "${{ secrets.PUSHPAY_SYNC_ENV_FILE }}" > .env
+
+      - name: Run push integrations (PushPay + Sheets)
+        env:
+          INTEGRATION_TARGET: ${{ inputs.target }}
+        run: |
+          pnpm pushpay-sync:push-integrations
