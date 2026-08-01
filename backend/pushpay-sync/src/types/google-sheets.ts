@@ -1,12 +1,14 @@
+import { Region, Ministry, AdditionType, TakeawayType } from "@repo/types";
+
 export interface AdditionSheetRow {
   id: string;
   date: string;
-  type: string;
+  type: AdditionType;
   firstName: string;
   lastName: string;
   gender: string;
-  region: string;
-  ministry: string;
+  region: Region;
+  ministry: Ministry;
   bibleTalk: string;
   weeklyPledge: string;
   phone: string;
@@ -22,8 +24,8 @@ export interface MembershipSheetRow {
   firstName: string;
   lastName: string;
   gender: string;
-  region: string;
-  ministry: string;
+  region: Region;
+  ministry: Ministry;
   bibleTalk: string;
   weeklyPledge: string;
   phone: string;
@@ -37,16 +39,19 @@ export interface MembershipSheetRow {
 export interface TakeawaySheetRow {
   id: string;
   date: string;
-  type: string;
+  type: TakeawayType;
   firstName: string;
   lastName: string;
   gender: string;
-  region: string;
-  ministry: string;
+  region: Region;
+  ministry: Ministry;
   bibleTalk: string;
-  reasonForFallaway: string;
-  movedTo: string;
+  weeklyPledge: string;
   phone: string;
   email: string;
+  physicalBirthday: string;
+  spiritualBirthday: string;
+  homeAddress: string;
+  movedTo: string;
   notes: string;
 }
