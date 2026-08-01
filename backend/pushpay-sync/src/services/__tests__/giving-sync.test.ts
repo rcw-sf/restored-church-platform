@@ -4,7 +4,6 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { fetchPushpayGiving } from "../../clients/giving.js";
 import { FirebaseAdmin } from "../../config/firebase.js";
 import { getEnvironment } from "../../env.js";
-import type { Environment } from "../../env.js";
 import { calculateSundayDate } from "../../helpers/date-utils.js";
 import { calculateEffectiveFromDate } from "../../helpers/giving/dates.js";
 import {
@@ -53,7 +52,28 @@ vi.mock("../../helpers/giving/processing.js");
 
 describe("giving-sync", () => {
   let firebaseAdmin: FirebaseAdmin;
-  let mockEnv: Environment;
+  const mockEnv = {
+    pushpayChmsApiBaseUrl: "https://test-chms.com",
+    pushpayChmsApiUsername: "test-user",
+    pushpayChmsApiPassword: "test-pass",
+    pushpayGivingApiBaseUrl: "https://test-giving.com",
+    pushpayAuthTokenApiBaseUrl: "https://test-auth.com",
+    pushpayAuthTokenUsername: "auth-user",
+    pushpayAuthTokenPassword: "auth-pass",
+    pushpayOrganizationId: "test-org",
+    contributionFundKey: "contributions",
+    benevolenceFundKey: "benevolence",
+    specialMissionsFundKey: "missions",
+    firebaseProjectId: "test-project",
+    tenantId: "test-tenant",
+    syncType: "weekly",
+    pushpayRateLimitMs: 100,
+    maxSyncStateTtlDays: 30,
+    maxDailyUsageTtlDays: 365,
+    transactionTtlDays: 30,
+    weeklyGivingSummaryTtlDays: 90,
+    githubActionCachePath: "/tmp/cache",
+  };
   let mockFrom: DateTime;
   let mockTo: DateTime;
   let mockTransactions: PushpayTransaction[];
@@ -141,31 +161,13 @@ describe("giving-sync", () => {
       refunds: [],
     };
 
-    mockEnv = {
-      pushpayChmsApiBaseUrl: "https://test-chms.com",
-      pushpayChmsApiUsername: "test-user",
-      pushpayChmsApiPassword: "test-pass",
-      pushpayGivingApiBaseUrl: "https://test-giving.com",
-      pushpayAuthTokenApiBaseUrl: "https://test-auth.com",
-      pushpayAuthTokenUsername: "auth-user",
-      pushpayAuthTokenPassword: "auth-pass",
-      pushpayOrganizationId: "test-org",
-      contributionFundKey: "contributions",
-      benevolenceFundKey: "benevolence",
-      specialMissionsFundKey: "missions",
-      firebaseProjectId: "test-project",
-      tenantId: "test-tenant",
-      syncType: "weekly",
-      pushpayRateLimitMs: 100,
-      maxSyncStateTtlDays: 30,
-      maxDailyUsageTtlDays: 365,
-      transactionTtlDays: 30,
-      weeklyGivingSummaryTtlDays: 90,
-      githubActionCachePath: "/tmp/cache",
-    };
-
     // Setup mock implementations
-    vi.mocked(getEnvironment).mockReturnValue(mockEnv);
+    // mockEnv may not include every required property of Environment type (like googleSpreadsheetId),
+    // so cast to any to satisfy TypeScript for tests
+    vi.mocked(getEnvironment).mockReturnValue(
+      mockEnv as ReturnType<typeof getEnvironment>,
+    );
+
     vi.mocked(fetchPushpayGiving).mockResolvedValue(mockTransactions);
     vi.mocked(calculateSundayDate).mockReturnValue(
       DateTime.fromISO("2023-01-01"),

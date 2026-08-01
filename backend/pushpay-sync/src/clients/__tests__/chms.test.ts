@@ -32,7 +32,11 @@ describe("fetchPushpayChms", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(getEnvironment).mockReturnValue(mockEnv);
+    // mockEnv may not include every required property of Environment type (like googleSpreadsheetId),
+    // so cast to any to satisfy TypeScript for tests
+    vi.mocked(getEnvironment).mockReturnValue(
+      mockEnv as ReturnType<typeof getEnvironment>,
+    );
 
     // Mock global fetch
     global.fetch = vi.fn();
