@@ -22,7 +22,7 @@
     "googleapis": "173.0.0"
   },
   "devDependencies": {
-    "nock": "14.0.15",
+    "nock": "14.0.16",
     "tsx": "4.22.4"
   }
 }
