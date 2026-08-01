@@ -7,6 +7,7 @@ export default mergeConfig(
     test: {
       include: ["__tests__/**/*.integration.test.{ts,tsx}"],
       exclude: [],
+      fileParallelism: false,
     },
   }),
 );
