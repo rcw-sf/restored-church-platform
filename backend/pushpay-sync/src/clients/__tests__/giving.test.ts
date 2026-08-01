@@ -20,7 +20,6 @@ const mockedFetch = vi.mocked(fetch);
 
 // Mock getEnvironment
 vi.mock("../../env.js");
-const mockedGetEnvironment = vi.mocked(getEnvironment);
 
 describe("pushpay giving client", () => {
   const mockEnv = {
@@ -86,7 +85,11 @@ describe("pushpay giving client", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockedGetEnvironment.mockReturnValue(mockEnv);
+    // mockEnv may not include every required property of Environment type (like googleSpreadsheetId),
+    // so cast to any to satisfy TypeScript for tests
+    vi.mocked(getEnvironment).mockReturnValue(
+      mockEnv as ReturnType<typeof getEnvironment>,
+    );
     clearAccessTokenCache();
   });
 
