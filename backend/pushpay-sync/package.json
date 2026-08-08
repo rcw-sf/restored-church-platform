@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "sync-members": "tsx src/run-sync-members.ts",
+    "push-integrations": "tsx src/run-push-integrations.ts",
     "sync-giving": "tsx src/run-sync-giving.ts",
     "calculate-summaries": "tsx src/run-calculate-summaries.ts",
     "typecheck": "tsc --noEmit",
